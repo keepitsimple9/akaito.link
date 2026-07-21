@@ -1,0 +1,9 @@
+# Llaves de acceso y configuración sensible
+js/env.js
+
+# Carpetas de dependencias (por si usas npm)
+node_modules/
+
+# Archivos de sistema y editores
+.DS_Store
+.vscode/

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Miembro - Proyecto Akaito</title>
+    <link rel="icon" type="image/png" href="img/logo_akaito.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/i18n.js"></script>
+</head>
+<body class="dashboard-body">
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="img/logo_akaito.svg" alt="Proyecto Akaito" style="height: 40px; width: auto; margin-right: 10px;">
+                <span class="logo">Proyecto Akaito</span>
+                <span class="badge">Miembro</span>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-section="inicio">
+                    <span class="icon">🏠</span> Inicio
+                </a>
+                <a href="#" class="menu-item" data-section="perfil">
+                    <span class="icon">👤</span> Mi Perfil
+                </a>
+                <a href="#" class="menu-item" data-section="emparejador">
+                    <span class="icon">🎯</span> Emparejador
+                </a>
+                <a href="#" class="menu-item" data-section="chat">
+                    <span class="icon">💬</span> Chat
+                </a>
+                <a href="#" class="menu-item" data-section="ayuda">
+                    <span class="icon">❓</span> Ayuda
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <select id="languageSelector" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 0.9rem;" onchange="changeLanguage(this.value)">
+                    <option value="es">Español</option>
+                    <option value="ja">日本語</option>
+                </select>
+                <button id="btnCerrarSesion" class="btn-logout">
+                    <span class="icon">🚪</span> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section id="sec-inicio" class="content-section active">
+                <h1 style="font-size: 2.2rem; margin-bottom: 20px;">¡Hola, <span id="nombreUsuario">paisano</span>! 👋</h1>
+                <p class="subtitle" style="margin-bottom: 20px;">Bienvenido a tu panel privado de Proyecto Akaito.</p>
+                
+                <div class="card" style="border-color: var(--accent); background-color: #fff5f6; margin-top: 30px;">
+                    <h3 style="color: var(--accent);">Estado de tu membresía: <span style="font-weight: 400; color: var(--text-main);">Activo</span></h3>
+                    <p style="margin-top: 10px;">
+                        ¡Felicidades! Ya eres un miembro verificado de la comunidad. Usa el menú lateral para explorar las herramientas disponibles.
+                    </p>
+                </div>
+            </section>
+
+            <section id="sec-perfil" class="content-section">
+                <div class="profile-header" style="margin-bottom: 25px;">
+                    <h2>👤 Mi Perfil de Miembro</h2>
+                    <p class="subtitle">Completa tu información para que podamos encontrarte conexiones altamente compatibles.</p>
+                </div>
+
+                <div class="card" style="background-color: white; padding: 30px; border-radius: 12px; border: 1px solid #e9ecef;">
+                    <form id="profileForm">
+                        <div class="profile-section-block">
+                            <h3 class="profile-block-title">📋 Información Básica</h3>
+                            <div class="profile-grid">
+                                <div class="form-group">
+                                    <label for="profNombre">Nombre de perfil:</label>
+                                    <input type="text" id="profNombre" required placeholder="Tu nombre público">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profEdad">Edad:</label>
+                                    <input type="number" id="profEdad" min="18" max="99" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profGenero">Género:</label>
+                                    <select id="profGenero" required>
+                                        <option value="">Selecciona tu género</option>
+                                        <option value="masculino">Masculino</option>
+                                        <option value="femenino">Femenino</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profWhatsapp">WhatsApp:</label>
+                                    <input type="tel" id="profWhatsapp" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profInstagram">Instagram (Opcional):</label>
+                                    <input type="text" id="profInstagram" placeholder="@tu_usuario">
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="profile-divider">
+
+                        <div class="profile-section-block">
+                            <h3 class="profile-block-title">✨ Sobre Mí e Intereses</h3>
+                            <div class="form-group">
+                                <label for="profBio">Preséntate en pocas palabras:</label>
+                                <textarea id="profBio" rows="3" placeholder="Ej. Me encanta la comida japonesa, viajar y busco a alguien con quien compartir caminatas de fin de semana..."></textarea>
+                            </div>
+                            
+                            <div class="profile-grid" style="margin-top: 15px;">
+                                <div class="form-group">
+                                    <label for="profIntereses">Tus hobbies favoritos (separados por comas):</label>
+                                    <input type="text" id="profIntereses" placeholder="Anime, Cocina, Fútbol, Gaming, Running">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profBusca">¿Qué buscas principalmente?</label>
+                                    <select id="profBusca">
+                                        <option value="pareja">Una relación seria</option>
+                                        <option value="conocer">Salir y ver qué pasa</option>
+                                        <option value="amistad">Amistad en la colectividad</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="profile-divider">
+
+                        <div class="profile-section-block">
+                            <h3 class="profile-block-title">📸 Mis Fotos</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Sube un par de fotos tuyas donde te veas genial para tu perfil.</p>
+                            
+                            <div class="photo-upload-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                                <div style="position: relative;">
+                                    <div id="fotoBox1" class="photo-box-placeholder" style="width: 100%; height: 200px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #f9f9f9; transition: all 0.2s;">
+                                        <span class="plus-icon" style="font-size: 2rem; color: #bbb;">+</span>
+                                        <span class="upload-text" style="color: #999; margin-top: 5px; text-align: center; font-size: 0.9rem;">Foto Principal</span>
+                                    </div>
+                                    <input type="file" id="inputFoto1" accept="image/*" style="display: none;">
+                                    <img id="preview1" style="display: none; width: 100%; height: 200px; object-fit: cover; border-radius: 8px; cursor: pointer;">
+                                </div>
+                                
+                                <div style="position: relative;">
+                                    <div id="fotoBox2" class="photo-box-placeholder" style="width: 100%; height: 200px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: #f9f9f9; transition: all 0.2s;">
+                                        <span class="plus-icon" style="font-size: 2rem; color: #bbb;">+</span>
+                                        <span class="upload-text" style="color: #999; margin-top: 5px; text-align: center; font-size: 0.9rem;">Foto 2</span>
+                                    </div>
+                                    <input type="file" id="inputFoto2" accept="image/*" style="display: none;">
+                                    <img id="preview2" style="display: none; width: 100%; height: 200px; object-fit: cover; border-radius: 8px; cursor: pointer;">
+                                </div>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-muted);">Las fotos se guardarán automáticamente cuando hagas clic en "Guardar Cambios".</p>
+                        </div>
+
+                        <button type="submit" id="btnGuardarPerfil" class="btn-primary" style="margin-top: 30px; width: auto; padding: 12px 30px;">
+                            Guardar Cambios
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+
+            <section id="sec-emparejador" class="content-section">
+                <h2>🎯 Emparejador</h2>
+                <p class="subtitle">Descubre a otros miembros de la comunidad.</p>
+                
+                <input type="text" id="buscadorEmparejador" placeholder="Buscar por nombre..." 
+                       style="width: 100%; padding: 12px; margin-bottom: 25px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                
+                <div id="listaUsuarios" class="profile-grid">
+                    <p>Cargando miembros...</p>
+                </div>
+            </section>
+
+            <section id="sec-perfil-usuario" class="content-section">
+                <div class="profile-header" style="margin-bottom: 25px;">
+                    <button id="btnVolverEmparejador" style="background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 1rem; margin-bottom: 15px;">← Volver al Emparejador</button>
+                    <h2 id="perfilUsuarioNombre">👤 Perfil de Miembro</h2>
+                    <p class="subtitle">Conoce más sobre este miembro de la comunidad.</p>
+                </div>
+
+                <div class="card" style="background-color: white; padding: 30px; border-radius: 12px; border: 1px solid #e9ecef;">
+                    <div class="profile-section-block">
+                        <h3 class="profile-block-title">� Fotos</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+                            <div id="fotoVerOtro1" style="width: 100%; height: 250px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <p style="color: #999;">Sin foto</p>
+                            </div>
+                            <div id="fotoVerOtro2" style="width: 100%; height: 250px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <p style="color: #999;">Sin foto</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="profile-divider">
+
+                    <div class="profile-section-block">
+                        <h3 class="profile-block-title">�📋 Información Básica</h3>
+                        <div class="profile-grid">
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Nombre</p>
+                                <p id="verNombre" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Edad</p>
+                                <p id="verEdad" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Género</p>
+                                <p id="verGenero" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">WhatsApp</p>
+                                <p id="verWhatsapp" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Instagram</p>
+                                <p id="verInstagram" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="profile-divider">
+
+                    <div class="profile-section-block">
+                        <h3 class="profile-block-title">✨ Sobre Mí e Intereses</h3>
+                        <div style="margin-bottom: 20px;">
+                            <p style="margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.9rem;">Bio</p>
+                            <p id="verBio" style="margin: 5px 0; line-height: 1.6;">-</p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <p style="margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.9rem;">Intereses</p>
+                            <p id="verIntereses" style="margin: 5px 0; line-height: 1.6;">-</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0 0 10px 0; color: var(--text-muted); font-size: 0.9rem;">¿Qué busca?</p>
+                            <p id="verBusca" style="margin: 5px 0; font-weight: 600;">-</p>
+                        </div>
+                    </div>
+
+                    <hr class="profile-divider">
+
+                    <button id="btnEnviarMensajeOtro" class="btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
+                        💬 Enviar Mensaje
+                    </button>
+                </div>
+            </section>
+
+            <section id="sec-chat" class="content-section">
+                <h2>💬 Mis Conversaciones</h2>
+                <div class="chat-layout" style="display: flex; height: 400px; gap: 20px;">
+                    <div id="sidebar-chats" style="width: 30%; border-right: 1px solid #ddd; overflow-y: auto;">
+                        <p>Tus chats recientes:</p>
+                        <div id="listaContactos"></div>
+                    </div>
+                    
+                    <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                        <div id="chat-container" style="flex-grow: 1; overflow-y: auto; background: #fff; border: 1px solid #ddd; padding: 10px;">
+                            <div id="mensajesList"></div>
+                        </div>
+                        <div style="display: flex; gap: 5px; margin-top: 10px;">
+                            <input type="text" id="inputMensaje" placeholder="Escribe..." style="flex-grow: 1; padding: 10px;">
+                            <button id="btnEnviar" class="btn-primary">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-ayuda" class="content-section">
+                <h2>❓ Soporte y Ayuda</h2>
+                <p class="subtitle">¿Tienes alguna duda o inconveniente? Estamos para ayudarte.</p>
+                <div class="card" style="margin-top: 20px; background-color: white;">
+                    <p>Escríbenos directamente a nuestro WhatsApp de soporte o revisa las preguntas frecuentes de la comunidad.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Ejemplo de cómo deberían ir cargados -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/init.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/translate.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postular a la Comunidad - Proyecto Akaito</title>
+    <link rel="icon" type="image/png" href="img/logo_akaito.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/i18n.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="container header-content">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                <img src="img/logo_akaito.svg" alt="Proyecto Akaito" style="height: 40px; width: auto;">
+                <span>Proyecto Akaito</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <select id="languageSelector" style="padding: 5px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" onchange="changeLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="ja">日本語</option>
+                </select>
+                <a href="login.html" style="text-decoration: none; color: var(--text-main); font-size: 0.9rem; font-weight: 600;">Iniciar Sesión</a>
+                <span class="badge">Formulario de Postulación</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="form-section" style="padding: 40px 0;">
+            <h2 style="text-align: center; margin-bottom: 10px; font-weight: 600;">❤️ Únete a Akaito ❤️</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px; font-weight: 300;">
+                Por favor, completa tus datos para iniciar tu proceso de postulación a la comunidad privada.
+            </p>
+
+            <div style="background: linear-gradient(135deg, #fff5f6 0%, #ffe4e9 100%); border: 3px solid var(--accent); border-radius: 12px; padding: 25px; margin-bottom: 40px; text-align: center;">
+                <p style="font-size: 1.3rem; font-weight: 700; color: var(--accent); margin: 0 0 10px 0;">⚠️ Fase de Pruebas ⚠️</p>
+                <p style="font-size: 1.1rem; font-weight: 600; color: #c41e3a; margin: 0 0 15px 0;">DE PREFERENCIA, NO RELLENAR</p>
+                <p style="font-size: 1rem; color: var(--text-main); margin: 0 0 15px 0; line-height: 1.6;">
+                    Esta plataforma se encuentra actualmente en fase de pruebas. Si estás interesado en participar en la comunidad de Proyecto Akaito, por favor contacta directamente a:
+                </p>
+                <a href="mailto:admin@akaito.link" style="display: inline-block; background-color: var(--accent); color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                    📧 admin@akaito.link
+                </a>
+            </div>
+
+            <form id="registroForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo:</label>
+                    <input type="text" id="nombre" name="nombre" required placeholder="Ej. Kenji Tanaka">
+                </div>
+                <div class="form-group">
+                    <label for="email">Correo Electrónico:</label>
+                    <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña para tu cuenta:</label>
+                    <input type="password" id="password" name="password" required placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label for="whatsapp">Número de WhatsApp:</label>
+                    <input type="tel" id="whatsapp" name="whatsapp" required placeholder="Ej. 987654321">
+                </div>
+                <div class="form-group">
+                    <label for="instagram">Usuario de Instagram (Opcional):</label>
+                    <input type="text" id="instagram" name="instagram" placeholder="@tu_usuario">
+                </div>
+                <div class="form-group">
+                    <label for="edad">Edad:</label>
+                    <input type="number" id="edad" name="edad" min="18" max="99" required placeholder="Debes ser mayor de edad">
+                </div>
+                <div class="form-group">
+                    <label for="genero">Género:</label>
+                    <select id="genero" name="genero" required>
+                        <option value="">Selecciona tu género</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Enviar mi Postulación</button>
+            </form>
+            <p style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+                ¿Ya postulaste antes? <a href="login.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">Inicia sesión aquí</a>
+            </p>
+
+            <div style="background: linear-gradient(135deg, #fff5f6 0%, #ffe4e9 100%); border: 3px solid var(--accent); border-radius: 12px; padding: 25px; margin-top: 20px; margin-bottom: 40px; text-align: center;">
+                <p style="font-size: 1.3rem; font-weight: 700; color: var(--accent); margin: 0 0 10px 0;">⚠️ Fase de Pruebas ⚠️</p>
+                <p style="font-size: 1.1rem; font-weight: 600; color: #c41e3a; margin: 0 0 15px 0;">DE PREFERENCIA, NO RELLENAR</p>
+                <p style="font-size: 1rem; color: var(--text-main); margin: 0 0 15px 0; line-height: 1.6;">
+                    Esta plataforma se encuentra actualmente en fase de pruebas. Si estás interesado en participar en la comunidad de Proyecto Akaito, por favor contacta directamente a:
+                </p>
+                <a href="mailto:admin@akaito.link" style="display: inline-block; background-color: var(--accent); color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1.1rem; margin: 0;">
+                    📧 admin@akaito.link
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Proyecto Akaito. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/init.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/translate.js"></script>
+</body>
+</html>
