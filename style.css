@@ -21,6 +21,45 @@ body {
     line-height: 1.6;
 }
 
+body.theme-dark {
+    --bg-color: #111827;
+    --text-main: #e5e7eb;
+    --text-muted: #9ca3af;
+    --card-bg: #1f2937;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+}
+
+.theme-toggle-global {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 2100;
+    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+    color: #495057;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
+}
+
+.theme-toggle-global:hover {
+    border-color: #ced4da;
+    background-color: #f8f9fa;
+}
+
+body.theme-dark .theme-toggle-global {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border-color: #475569;
+}
+
 .container {
     max-width: 900px;
     margin: 0 auto;
@@ -50,6 +89,59 @@ header {
     padding: 6px 12px;
     border-radius: 20px;
     color: var(--text-muted);
+}
+
+.user-bubble-menu {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.user-bubble {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background-color: var(--accent);
+    color: transparent;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.user-bubble:hover {
+    transform: translateY(-1px);
+    background-color: var(--accent-hover);
+}
+
+.bubble-logout-btn {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    white-space: nowrap;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+    color: #e63946;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 1200;
+}
+
+.user-bubble-menu:hover .bubble-logout-btn {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 /* Hero Section */
@@ -135,6 +227,71 @@ footer {
     border-top: 1px solid #e9ecef;
 }
 
+body.theme-dark .badge {
+    background-color: #334155;
+    color: #cbd5e1;
+}
+
+body.theme-dark .card,
+body.theme-dark #registroForm,
+body.theme-dark #loginForm,
+body.theme-dark #recoverForm,
+body.theme-dark #newPasswordForm,
+body.theme-dark .sidebar,
+body.theme-dark .main-content {
+    background-color: #1f2937 !important;
+    border-color: #334155 !important;
+    color: #e5e7eb;
+}
+
+body.theme-dark .separator,
+body.theme-dark footer,
+body.theme-dark .profile-divider,
+body.theme-dark .sidebar {
+    border-color: #334155;
+    background: #1f2937;
+}
+
+body.theme-dark input,
+body.theme-dark select,
+body.theme-dark textarea,
+body.theme-dark #languageSelector,
+body.theme-dark #buscadorEmparejador,
+body.theme-dark #inputMensaje,
+body.theme-dark #chat-container,
+body.theme-dark #sidebar-chats,
+body.theme-dark .menu-item,
+body.theme-dark .photo-box-placeholder {
+    background-color: #111827 !important;
+    color: #e5e7eb;
+    border-color: #475569 !important;
+}
+
+body.theme-dark .menu-item:hover,
+body.theme-dark .menu-item.active,
+body.theme-dark .photo-box-placeholder:hover {
+    background-color: #273449 !important;
+}
+
+body.theme-dark .btn-logout {
+    border-color: #475569;
+    color: #fda4af;
+}
+
+body.theme-dark .quick-action-btn {
+    background-color: #111827;
+    color: #e5e7eb;
+    border-color: #475569;
+}
+
+body.theme-dark .btn-logout:hover {
+    background-color: #273449;
+}
+
+body.theme-dark a {
+    color: #f8b4be;
+}
+
 /* Adaptación para celulares */
 @media (max-width: 600px) {
     .hero h1 { font-size: 2rem; }
@@ -142,7 +299,10 @@ footer {
 }
 
 /* Asegura que el formulario se centre bien y tenga el look premium */
-#registroForm {
+#registroForm,
+#loginForm,
+#recoverForm,
+#newPasswordForm {
     background-color: var(--card-bg);
     padding: 40px;
     border-radius: 16px;
@@ -213,15 +373,47 @@ footer {
     overflow: hidden; /* Evita scrolls dobles extraños */
 }
 
+body.dashboard-body.theme-dark {
+    background-color: var(--bg-color);
+}
+
 .dashboard-container {
     display: flex;
     height: 100vh;
     width: 100vw;
+    position: relative;
+}
+
+.sidebar-toggle-btn {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 2200;
+    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+    color: #495057;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle-btn:hover {
+    border-color: #ced4da;
+    background-color: #f8f9fa;
 }
 
 /* --- SIDEBAR --- */
 .sidebar {
     width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    flex: 0 0 280px;
     background-color: #ffffff;
     border-right: 1px solid #e9ecef;
     display: flex;
@@ -229,6 +421,18 @@ footer {
     padding: 30px 20px;
     box-sizing: border-box;
     justify-content: space-between;
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.dashboard-container.sidebar-hidden .sidebar {
+    transform: translateX(-110%);
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1300;
 }
 
 .sidebar-header {
@@ -243,6 +447,30 @@ footer {
     flex-direction: column;
     gap: 10px;
     flex-grow: 1;
+}
+
+.sidebar-quick-actions {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.quick-action-btn {
+    flex: 1;
+    border: 1px solid #dee2e6;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    color: #495057;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+    border-color: #ced4da;
+    background: #f8f9fa;
 }
 
 .menu-item {
@@ -298,9 +526,20 @@ footer {
 /* --- CONTENIDO PRINCIPAL --- */
 .main-content {
     flex-grow: 1;
+    min-width: 0;
     padding: 50px;
     overflow-y: auto;
     box-sizing: border-box;
+}
+
+.dashboard-container.sidebar-hidden .main-content {
+    width: 100%;
+}
+
+body.theme-dark .sidebar-toggle-btn {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    border-color: #475569;
 }
 
 /* Control de visibilidad de secciones */
@@ -402,6 +641,86 @@ footer {
     color: #6c757d;
     margin-top: 5px;
     text-align: center;
+}
+
+.usuarios-tabs,
+.citas-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.usuarios-tab-btn,
+.citas-tab-btn {
+    border: 1px solid #dee2e6;
+    background-color: #ffffff;
+    color: var(--text-main);
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.usuarios-tab-btn:hover,
+.citas-tab-btn:hover {
+    border-color: #ced4da;
+    background-color: #f8f9fa;
+}
+
+.usuarios-tab-btn.active,
+.citas-tab-btn.active {
+    border-color: var(--accent);
+    background-color: #fff5f6;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.usuarios-tab-panel,
+.citas-tab-panel {
+    display: none;
+}
+
+.usuarios-tab-panel.active,
+.citas-tab-panel.active {
+    display: block;
+}
+
+.gokon-people-list {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.gokon-person-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+body.theme-dark .usuarios-tab-btn,
+body.theme-dark .citas-tab-btn,
+body.theme-dark .gokon-people-list {
+    background-color: #111827;
+    color: #e5e7eb;
+    border-color: #475569;
+}
+
+body.theme-dark .usuarios-tab-btn.active,
+body.theme-dark .citas-tab-btn.active {
+    background-color: #422226;
+    color: #ffb4be;
+    border-color: #8f3b45;
 }
 
 .profile-grid {

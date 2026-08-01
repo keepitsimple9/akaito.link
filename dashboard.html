@@ -13,12 +13,16 @@
     <script src="js/i18n.js"></script>
 </head>
 <body class="dashboard-body">
+    <button id="btnThemeGlobal" class="theme-toggle-global" type="button" aria-label="Alternar modo nocturno o diurno">🌙 Nocturno</button>
+    <button id="btnToggleSidebar" class="sidebar-toggle-btn" type="button" aria-label="Mostrar u ocultar barra lateral" aria-expanded="true">☰ Ocultar menú</button>
 
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="img/logo_akaito.svg" alt="Proyecto Akaito" style="height: 40px; width: auto; margin-right: 10px;">
-                <span class="logo">Proyecto Akaito</span>
+                <a href="index-miembro.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                    <img src="img/logo_akaito.svg" alt="Proyecto Akaito" style="height: 40px; width: auto;">
+                    <span class="logo">Proyecto Akaito</span>
+                </a>
                 <span class="badge">Miembro</span>
             </div>
             
@@ -30,15 +34,28 @@
                     <span class="icon">👤</span> Mi Perfil
                 </a>
                 <a href="#" class="menu-item" data-section="emparejador">
-                    <span class="icon">🎯</span> Emparejador
+                    <span class="icon">👥</span> Usuarios
+                </a>
+                <a href="#" class="menu-item" data-section="citas">
+                    <span class="icon">📅</span> Citas
+                </a>
+                <a href="#" class="menu-item" data-section="eventos">
+                    <span class="icon">🎉</span> Eventos
                 </a>
                 <a href="#" class="menu-item" data-section="chat">
                     <span class="icon">💬</span> Chat
+                </a>
+                <a href="#" class="menu-item" data-section="preguntas">
+                    <span class="icon">📘</span> Preguntas
                 </a>
                 <a href="#" class="menu-item" data-section="ayuda">
                     <span class="icon">❓</span> Ayuda
                 </a>
             </nav>
+
+            <div class="sidebar-quick-actions">
+                <button id="btnConfig" class="quick-action-btn" type="button" aria-label="Ir a configuracion">⚙ Configuracion</button>
+            </div>
 
             <div class="sidebar-footer">
                 <select id="languageSelector" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 0.9rem;" onchange="changeLanguage(this.value)">
@@ -61,6 +78,117 @@
                     <p style="margin-top: 10px;">
                         ¡Felicidades! Ya eres un miembro verificado de la comunidad. Usa el menú lateral para explorar las herramientas disponibles.
                     </p>
+                </div>
+            </section>
+
+            <section id="sec-citas" class="content-section">
+                <h2>📅 Citas</h2>
+                <p class="subtitle">Organiza tus encuentros y revisa tu actividad reciente.</p>
+
+                <div class="citas-tabs" role="tablist" aria-label="Pestañas de citas">
+                    <button type="button" class="citas-tab-btn active" data-tab="crear">Crear Cita</button>
+                    <button type="button" class="citas-tab-btn" data-tab="historial">Historial de cita</button>
+                    <button type="button" class="citas-tab-btn" data-tab="invitaciones">Invitaciones de citas</button>
+                </div>
+
+                <div id="citas-tab-crear" class="citas-tab-panel active">
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 12px;">Nueva cita</h3>
+                        <form id="citaForm">
+                            <div class="profile-grid">
+                                <div id="citaPersonaSingleGroup" class="form-group">
+                                    <label for="citaPersona">Con quién:</label>
+                                    <select id="citaPersona">
+                                        <option value="">Selecciona un usuario</option>
+                                        <option>Aiko Yamamoto</option>
+                                        <option>Haruto Sato</option>
+                                        <option>Mika Tanaka</option>
+                                    </select>
+                                </div>
+                                <div id="citaPersonaGrupoGroup" class="form-group" style="display: none;">
+                                    <label>Participantes del gokon:</label>
+                                    <div class="gokon-people-list">
+                                        <label class="gokon-person-item"><input type="checkbox" value="Aiko Yamamoto"> Aiko Yamamoto</label>
+                                        <label class="gokon-person-item"><input type="checkbox" value="Haruto Sato"> Haruto Sato</label>
+                                        <label class="gokon-person-item"><input type="checkbox" value="Mika Tanaka"> Mika Tanaka</label>
+                                        <label class="gokon-person-item"><input type="checkbox" value="Kenji Mori"> Kenji Mori</label>
+                                        <label class="gokon-person-item"><input type="checkbox" value="Naomi Kato"> Naomi Kato</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="citaTipo">Tipo de cita:</label>
+                                    <select id="citaTipo">
+                                        <option value="normal">Normal</option>
+                                        <option value="gokon">gokon</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="citaFecha">Fecha:</label>
+                                    <input type="date" id="citaFecha">
+                                </div>
+                                <div class="form-group">
+                                    <label for="citaHora">Hora:</label>
+                                    <input type="time" id="citaHora">
+                                </div>
+                                <div class="form-group">
+                                    <label for="citaLugar">Lugar:</label>
+                                    <input type="text" id="citaLugar" placeholder="Ej. Cafeteria del centro">
+                                </div>
+                            </div>
+                            <p id="citaFeedback" class="subtitle" style="margin-top: 10px;"></p>
+                            <button type="submit" class="btn-primary" style="margin-top: 15px; padding: 10px 16px;">Crear cita</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="citas-tab-historial" class="citas-tab-panel">
+                    <div id="citaHistorialList" class="profile-grid"></div>
+                </div>
+
+                <div id="citas-tab-invitaciones" class="citas-tab-panel">
+                    <div id="citaInvitacionesList" class="profile-grid"></div>
+                </div>
+            </section>
+
+            <section id="sec-eventos" class="content-section">
+                <h2>🎉 Eventos</h2>
+                <p class="subtitle">Participa en eventos especiales de la comunidad.</p>
+
+                <div class="profile-grid">
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">Shumikon</h3>
+                        <p style="margin-bottom: 12px; color: var(--text-muted);">Evento tematico por afinidades e intereses compartidos.</p>
+                        <p style="margin-bottom: 12px;">Formato: grupos pequenos con dinamicas guiadas.</p>
+                        <button class="btn-primary" style="padding: 10px 16px;">Ver proximas fechas</button>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">Machikon</h3>
+                        <p style="margin-bottom: 12px; color: var(--text-muted);">Encuentros sociales amplios para conocer mas personas.</p>
+                        <p style="margin-bottom: 12px;">Formato: networking romantico en espacios abiertos.</p>
+                        <button class="btn-primary" style="padding: 10px 16px;">Ver proximas fechas</button>
+                    </div>
+                </div>
+
+                <hr class="profile-divider">
+
+                <h3 class="profile-block-title">Historial de eventos</h3>
+                <div class="profile-grid">
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">Shumikon - Edicion Primavera</h3>
+                        <p style="margin-bottom: 8px; color: var(--text-muted);">15/05/2026 · Centro Cultural Nikkei</p>
+                        <p style="margin: 0;">Asistentes: 42 · Estado: Finalizado</p>
+                    </div>
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">Machikon - Encuentro Urbano</h3>
+                        <p style="margin-bottom: 8px; color: var(--text-muted);">22/06/2026 · Barrio Historico</p>
+                        <p style="margin: 0;">Asistentes: 58 · Estado: Finalizado</p>
+                    </div>
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">Shumikon - Anime & Cafe</h3>
+                        <p style="margin-bottom: 8px; color: var(--text-muted);">08/07/2026 · Akari Coffee House</p>
+                        <p style="margin: 0;">Asistentes: 35 · Estado: Finalizado</p>
+                    </div>
                 </div>
             </section>
 
@@ -164,20 +292,40 @@
 
 
             <section id="sec-emparejador" class="content-section">
-                <h2>🎯 Emparejador</h2>
-                <p class="subtitle">Descubre a otros miembros de la comunidad.</p>
-                
-                <input type="text" id="buscadorEmparejador" placeholder="Buscar por nombre..." 
-                       style="width: 100%; padding: 12px; margin-bottom: 25px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
-                
-                <div id="listaUsuarios" class="profile-grid">
-                    <p>Cargando miembros...</p>
+                <h2>👥 Usuarios</h2>
+                <p class="subtitle">Explora la comunidad y gestiona tus conexiones.</p>
+
+                <div class="usuarios-tabs" role="tablist" aria-label="Pestañas de usuarios">
+                    <button type="button" class="usuarios-tab-btn active" data-tab="buscar">Buscar usuario</button>
+                    <button type="button" class="usuarios-tab-btn" data-tab="amigos">Amigos</button>
+                    <button type="button" class="usuarios-tab-btn" data-tab="solicitudes">Solicitudes de amigos</button>
+                </div>
+
+                <div id="usuarios-tab-buscar" class="usuarios-tab-panel active">
+                    <input type="text" id="buscadorEmparejador" placeholder="Buscar por nombre..." 
+                           style="width: 100%; padding: 12px; margin-bottom: 25px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+
+                    <div id="listaUsuarios" class="profile-grid">
+                        <p>Cargando miembros...</p>
+                    </div>
+                </div>
+
+                <div id="usuarios-tab-amigos" class="usuarios-tab-panel">
+                    <div id="listaAmigos" class="profile-grid">
+                        <p>Cargando amigos...</p>
+                    </div>
+                </div>
+
+                <div id="usuarios-tab-solicitudes" class="usuarios-tab-panel">
+                    <div id="listaSolicitudes" class="profile-grid">
+                        <p>Cargando solicitudes...</p>
+                    </div>
                 </div>
             </section>
 
             <section id="sec-perfil-usuario" class="content-section">
                 <div class="profile-header" style="margin-bottom: 25px;">
-                    <button id="btnVolverEmparejador" style="background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 1rem; margin-bottom: 15px;">← Volver al Emparejador</button>
+                    <button id="btnVolverEmparejador" style="background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 1rem; margin-bottom: 15px;">← Volver a Usuarios</button>
                     <h2 id="perfilUsuarioNombre">👤 Perfil de Miembro</h2>
                     <p class="subtitle">Conoce más sobre este miembro de la comunidad.</p>
                 </div>
@@ -269,6 +417,26 @@
                 </div>
             </section>
 
+            <section id="sec-preguntas" class="content-section">
+                <h2>📘 Preguntas Frecuentes</h2>
+                <p class="subtitle">Conceptos clave para entender mejor la comunidad Akaito.</p>
+
+                <div class="card" style="margin-top: 20px; background-color: white;">
+                    <h3 style="margin-bottom: 10px;">¿Qué es un gokon?</h3>
+                    <p>Un gokon es una cita grupal. Participan varias personas para conocerse en un ambiente relajado y social, ideal para romper el hielo sin la presion de una cita uno a uno.</p>
+                </div>
+
+                <div class="card" style="margin-top: 16px; background-color: white;">
+                    <h3 style="margin-bottom: 10px;">¿Qué es un shumikon?</h3>
+                    <p>Un shumikon es un encuentro centrado en afinidades e intereses compartidos. La dinamica ayuda a conectar personas con hobbies o estilos de vida parecidos.</p>
+                </div>
+
+                <div class="card" style="margin-top: 16px; background-color: white;">
+                    <h3 style="margin-bottom: 10px;">¿Qué es un machikon?</h3>
+                    <p>Un machikon es un evento social mas amplio, normalmente en ciudad o por zonas, donde muchas personas pueden conversar y conocerse en distintos espacios durante la misma jornada.</p>
+                </div>
+            </section>
+
             <section id="sec-ayuda" class="content-section">
                 <h2>❓ Soporte y Ayuda</h2>
                 <p class="subtitle">¿Tienes alguna duda o inconveniente? Estamos para ayudarte.</p>
@@ -282,11 +450,13 @@
     <!-- Ejemplo de cómo deberían ir cargados -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="js/init.js"></script>
+    <script src="js/member-redirect.js"></script>
     <script src="js/api.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/chat.js"></script>
     <script src="js/app.js"></script>
     <script src="js/translate.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html>

@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proyecto Akaito</title>
+    <title>Proyecto Akaito - Miembro</title>
     <link rel="icon" type="image/png" href="img/logo_akaito.png">
     <link rel="stylesheet" href="style.css">
-    <!-- Tipografía elegante y limpia -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -18,16 +17,21 @@
 
     <header>
         <div class="container header-content">
-            <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+            <a href="index-miembro.html" class="logo" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
                 <img src="img/logo_akaito.svg" alt="Proyecto Akaito" style="height: 40px; width: auto;">
                 <span>Proyecto Akaito</span>
-            </div>
+            </a>
             <div style="display: flex; align-items: center; gap: 15px;">
                 <select id="languageSelector" style="padding: 5px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" onchange="changeLanguage(this.value)">
                     <option value="es">ES</option>
                     <option value="ja">日本語</option>
                 </select>
-                <a href="login.html" style="text-decoration: none; color: var(--text-main); font-size: 0.9rem; font-weight: 600;">Iniciar Sesión</a>
+
+                <div class="user-bubble-menu">
+                    <a href="dashboard.html" class="user-bubble" aria-label="Volver al dashboard">●</a>
+                    <a href="#" id="btnCerrarSesionMiembro" class="bubble-logout-btn">Cerrar sesión</a>
+                </div>
+
                 <span class="badge">Comunidad Privada</span>
             </div>
         </div>
@@ -37,8 +41,8 @@
         <section class="hero">
             <h1>❤️ Un espacio exclusivo para conectar con alguien especial ❤️</h1>
             <p class="subtitle">En Proyecto Akaito queremos facilitar la formación de parejas románticas a jóvenes de la colectividad nikkei internacional.</p>
-            
-            <a href="registro.html" class="btn-primary">Postular a la Comunidad</a>
+
+            <a href="dashboard.html" class="btn-primary" style="background-color: var(--accent);">Volver al dashboard</a>
         </section>
 
         <hr class="separator">
@@ -54,7 +58,7 @@
             </div>
             <div class="card">
                 <h3>Eventos a Medida de la comunidad</h3>
-                <p>Desde esta acercamientos web hasta gōkon (presencial).</p>
+                <p>Desde acercamientos web hasta gokon (presencial).</p>
             </div>
         </section>
 
@@ -65,7 +69,7 @@
             <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 1.1rem;">Contáctanos para más información sobre cómo unirte a nuestra comunidad</p>
             <h3>admin@akaito.link</h3>
             <a href="mailto:contacto@proyectoakaito.com" style="display: inline-block; background-color: var(--accent); color: white; padding: 15px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: all 0.3s;">
-                ✉️ admin@akaito.link
+                ✉ admin@akaito.link
             </a>
             <p style="color: var(--text-muted); margin-top: 15px; font-size: 0.9rem;">Responderemos tu mensaje lo antes posible</p>
         </section>
@@ -78,8 +82,19 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="js/init.js"></script>
     <script src="js/member-redirect.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/translate.js"></script>
     <script src="js/theme.js"></script>
+    <script>
+        (function () {
+            const btnCerrarSesionMiembro = document.getElementById('btnCerrarSesionMiembro');
+            if (btnCerrarSesionMiembro) {
+                btnCerrarSesionMiembro.addEventListener('click', async function (event) {
+                    event.preventDefault();
+                    await Auth.cerrarSesion();
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
