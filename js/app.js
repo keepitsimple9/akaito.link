@@ -166,6 +166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!perfil) {
                 actualizarEstadoConexion('Auth conectada. No se encontro tu perfil en tabla usuarios.', 'error');
+                window.perfilPropioCache = perfil;
                 return null;
             }
 
@@ -500,7 +501,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderizarOpcionesUsuarios() {
         if (!citaPersonaSelect) return;
         const candidatos = usuariosCargados
-            .filter((u) => u.email !== emailActual && relacionesUsuarios.amigos?.has(String(u.id)));
+            .filter((u) => u.email !== emailActual);
 
         if (citaFiltroPaisSelect) {
             const paisSeleccionado = citaFiltroPaisSelect.value || '';
@@ -935,6 +936,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 UI.actualizarNombreUsuario(datosPerfil.nombre);
                 if (actualizado) {
                     perfilPropioCache = actualizado;
+                    window.perfilPropioCache = actualizado;
                     UI.cargarPerfil(actualizado);
                 }
                 actualizarEstadoConexion('Perfil guardado en Supabase correctamente.', 'ok');
@@ -947,17 +949,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     const inputMensaje = document.getElementById('inputMensaje');
     
     const enviarMensaje = async () => {
-        const contenido = inputMensaje.value;
+        const contenido = (inputMensaje?.value || '').trim();
         
         if (!interlocutorActual) { alert('Selecciona un contacto'); return; }
-        if (!contenido) return;
-        if (!usuarioActualId) { alert('No se pudo identificar tu usuario actual.'); return; }
+        if (!contenido) { alert('Escribe un mensaje antes de enviarlo.'); return; }
 
-        await API.enviarMensaje(usuarioActualId, interlocutorActual, contenido);
-        inputMensaje.value = '';
-        
-        // Refrescar mensajes tras enviar
-        await Chat.abrirChat(interlocutorActual);
+        let remitenteId = usuarioActualId || perfilPropioCache?.id || null;
+        if (!remitenteId && typeof Chat?.obtenerMiPerfilSeguro === 'function') {
+            const miPerfil = await Chat.obtenerMiPerfilSeguro();
+            remitenteId = miPerfil?.id || null;
+            if (miPerfil && !perfilPropioCache) {
+                perfilPropioCache = miPerfil;
+                window.perfilPropioCache = miPerfil;
+            }
+        }
+
+        if (!remitenteId) { alert('No se pudo identificar tu usuario actual.'); return; }
+
+        try {
+            const { error, data } = await API.enviarMensaje(remitenteId, interlocutorActual, contenido);
+            if (error) {
+                throw error;
+            }
+
+            inputMensaje.value = '';
+
+            if (!data) {
+                console.warn('Mensaje enviado, pero la insercion no devolvio data.');
+            }
+
+            // Refrescar mensajes tras enviar
+            await Chat.abrirChat(interlocutorActual);
+        } catch (error) {
+            console.error('Error enviando mensaje:', error);
+            alert('No se pudo enviar el mensaje: ' + (error?.message || error || 'desconocido'));
+        }
     };
     
     if (btnEnviar) {

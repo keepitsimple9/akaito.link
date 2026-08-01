@@ -292,6 +292,32 @@ body.theme-dark a {
     color: #f8b4be;
 }
 
+/* Chat */
+.contact-item {
+    border-radius: 8px;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.contact-item:hover {
+    background-color: rgba(189, 31, 54, 0.08);
+}
+
+.contact-item.active {
+    background-color: var(--accent) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 6px 18px rgba(189, 31, 54, 0.18);
+}
+
+body.theme-dark .contact-item:hover {
+    background-color: rgba(189, 31, 54, 0.16);
+}
+
+body.theme-dark .contact-item.active {
+    background-color: #c92a44 !important;
+    color: #ffffff !important;
+}
+
 /* Adaptación para celulares */
 @media (max-width: 600px) {
     .hero h1 { font-size: 2rem; }

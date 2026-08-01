@@ -1,5 +1,44 @@
 // js/chat.js
 const Chat = {
+    marcarContactoActivo(contactoId) {
+        const id = String(contactoId);
+        document.querySelectorAll('.contact-item').forEach((div) => {
+            const esActivo = div.getAttribute('data-user-id') === id;
+            div.classList.toggle('active', esActivo);
+            if (!esActivo) {
+                div.style.backgroundColor = 'transparent';
+                div.style.color = 'var(--text-main)';
+                div.style.fontWeight = 'normal';
+            }
+        });
+    },
+
+    async obtenerMiPerfilSeguro() {
+        if (window.perfilPropioCache?.id) {
+            return window.perfilPropioCache;
+        }
+
+        try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session?.user?.email) return null;
+
+            const { data: perfil } = await supabaseClient
+                .from('usuarios')
+                .select('*')
+                .eq('email', session.user.email)
+                .maybeSingle();
+
+            if (perfil) {
+                window.perfilPropioCache = perfil;
+            }
+
+            return perfil || null;
+        } catch (error) {
+            console.warn('No se pudo resolver el perfil propio para chat:', error);
+            return null;
+        }
+    },
+
     obtenerNombreVisible(usuario = {}, fallbackId = '') {
         const nombre = (usuario.nombre || usuario.nombre_perfil || '').trim();
         if (nombre) return nombre;
@@ -13,8 +52,25 @@ const Chat = {
     },
 
     async cargarLista(listaContactos, usuarioPropioId) {
-        const { data: mensajes } = await API.obtenerContactos(usuarioPropioId);
-        const { data: usuarios } = await API.obtenerUsuarios();
+        if (!listaContactos) return;
+
+        let mensajes = [];
+        let usuarios = [];
+
+        try {
+            const contactosResp = await API.obtenerContactos(usuarioPropioId);
+            mensajes = contactosResp?.data || [];
+        } catch (error) {
+            console.warn('No se pudieron cargar contactos de chat:', error);
+        }
+
+        try {
+            const usuariosResp = await API.obtenerUsuarios();
+            usuarios = usuariosResp?.data || [];
+        } catch (error) {
+            console.warn('No se pudieron cargar usuarios para chat:', error);
+        }
+
         const usuariosPorId = new Map((usuarios || []).map((usuario) => [String(usuario.id), usuario]));
 
         const contactos = new Set();
@@ -34,6 +90,9 @@ const Chat = {
             const etiqueta = Chat.obtenerNombreVisible(usuario, contactoId);
             const div = document.createElement('div');
             div.className = 'contact-item';
+            if (String(contactoId) === String(window.interlocutorActual || '')) {
+                div.classList.add('active');
+            }
             div.setAttribute('data-user-id', contactoId);
             div.textContent = etiqueta;
             div.style.cssText = 'cursor: pointer; padding: 10px; margin: 5px 0; border-radius: 6px; background-color: transparent; transition: background-color 0.2s;';
@@ -54,12 +113,21 @@ const Chat = {
             listaContactos.innerHTML = '';
         }
 
-        const { data: usuarios } = await API.obtenerUsuarios();
+        let usuarios = [];
+        try {
+            const usuariosResp = await API.obtenerUsuarios();
+            usuarios = usuariosResp?.data || [];
+        } catch (error) {
+            console.warn('No se pudo cargar usuario para contacto visible:', error);
+        }
         const usuario = (usuarios || []).find((u) => String(u.id) === id);
         const etiqueta = Chat.obtenerNombreVisible(usuario, id);
 
         const div = document.createElement('div');
         div.className = 'contact-item';
+        if (String(id) === String(window.interlocutorActual || '')) {
+            div.classList.add('active');
+        }
         div.setAttribute('data-user-id', id);
         div.textContent = etiqueta;
         div.style.cssText = 'cursor: pointer; padding: 10px; margin: 5px 0; border-radius: 6px; background-color: transparent; transition: background-color 0.2s;';
@@ -70,36 +138,50 @@ const Chat = {
     async abrirChat(contactoId) {
         interlocutorActual = String(contactoId);
         await Chat.asegurarContactoVisible(interlocutorActual);
-        
-        // Remover clase activa de todos los contactos
-        const todosContactos = document.querySelectorAll('.contact-item');
-        todosContactos.forEach(div => {
-            div.style.backgroundColor = 'transparent';
-            div.style.color = 'var(--text-main)';
-            div.style.fontWeight = 'normal';
-        });
+        Chat.marcarContactoActivo(interlocutorActual);
         
         // Marcar contacto actual como activo
         const contactoActivo = document.querySelector(`[data-user-id="${interlocutorActual}"]`);
         if (contactoActivo) {
-            contactoActivo.style.backgroundColor = 'var(--accent)';
-            contactoActivo.style.color = 'white';
-            contactoActivo.style.fontWeight = 'bold';
+            contactoActivo.classList.add('active');
         }
         
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        const { data: miPerfil } = await API.obtenerPerfil(session.user.email);
+        const miPerfil = await Chat.obtenerMiPerfilSeguro();
         const miUsuarioId = miPerfil?.id;
         if (!miUsuarioId) {
+            const mensajesList = document.getElementById('mensajesList');
+            if (mensajesList) {
+                mensajesList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No se pudo resolver tu perfil para abrir el chat.</p>';
+            }
             return;
         }
 
-        const { data: mensajes } = await API.obtenerMensajes(miUsuarioId, interlocutorActual);
-        const { data: usuarios } = await API.obtenerUsuarios();
+        let mensajes = [];
+        let usuarios = [];
+
+        try {
+            const mensajesResp = await API.obtenerMensajes(miUsuarioId, interlocutorActual);
+            mensajes = mensajesResp?.data || [];
+        } catch (error) {
+            console.warn('No se pudieron cargar mensajes del chat:', error);
+        }
+
+        try {
+            const usuariosResp = await API.obtenerUsuarios();
+            usuarios = usuariosResp?.data || [];
+        } catch (error) {
+            console.warn('No se pudieron cargar usuarios para renderizar mensajes:', error);
+        }
+
         const usuariosPorId = new Map((usuarios || []).map((usuario) => [String(usuario.id), usuario]));
         
         const mensajesList = document.getElementById('mensajesList');
+        if (!mensajesList) return;
         mensajesList.innerHTML = '';
+        if (!mensajes || mensajes.length === 0) {
+            mensajesList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">Aun no hay mensajes en esta conversacion.</p>';
+            return;
+        }
         
         mensajes?.forEach(msg => {
             const esMensajePropio = String(msg.remitente_id) === String(miUsuarioId);

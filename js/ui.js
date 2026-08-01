@@ -269,7 +269,11 @@ const UI = {
         if (!listaSolicitudes) return;
 
         if (!solicitudes || solicitudes.length === 0) {
-            listaSolicitudes.innerHTML = '<p>No tienes solicitudes pendientes</p>';
+            listaSolicitudes.innerHTML = `
+                <div class="card" style="background-color: white; max-width: 320px;">
+                    <p style="margin: 0; color: var(--text-muted); font-size: 0.95rem;">No tienes solicitudes pendientes.</p>
+                </div>
+            `;
             return;
         }
 
