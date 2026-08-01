@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Proyecto Akaito</title>
+    <link rel="icon" type="image/png" href="img/logo_akaito.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/i18n.js"></script>
+</head>
+<body class="dashboard-body">
+    <button id="btnThemeGlobal" class="theme-toggle-global" type="button" aria-label="Alternar modo nocturno o diurno">🌙 Nocturno</button>
+    <button id="btnToggleSidebar" class="sidebar-toggle-btn" type="button" aria-label="Mostrar u ocultar barra lateral" aria-expanded="true">☰ Ocultar menú</button>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="admin-dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                    <img src="img/logo_akaito.svg" alt="Proyecto Akaito" style="height: 40px; width: auto;">
+                    <span class="logo">Proyecto Akaito</span>
+                </a>
+                <span class="badge" style="background-color: #ff6b35; color: white;">Admin</span>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-section="inicio">
+                    <span class="icon">📊</span> Panel General
+                </a>
+                <a href="#" class="menu-item" data-section="usuarios">
+                    <span class="icon">👥</span> Usuarios
+                </a>
+                <a href="#" class="menu-item" data-section="postulantes">
+                    <span class="icon">📋</span> Postulantes
+                </a>
+                <a href="#" class="menu-item" data-section="eventos">
+                    <span class="icon">🎉</span> Eventos
+                </a>
+                <a href="#" class="menu-item" data-section="reportes">
+                    <span class="icon">📈</span> Reportes
+                </a>
+                <a href="#" class="menu-item" data-section="configuracion">
+                    <span class="icon">⚙️</span> Configuración
+                </a>
+            </nav>
+
+            <div class="sidebar-quick-actions">
+                <button id="btnConfig" class="quick-action-btn" type="button" aria-label="Ir a configuracion">⚙ Configuración</button>
+            </div>
+
+            <div class="sidebar-footer">
+                <select id="languageSelector" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 0.9rem;" onchange="changeLanguage(this.value)">
+                    <option value="es">Español</option>
+                    <option value="ja">日本語</option>
+                </select>
+                <button id="btnCerrarSesion" class="btn-logout">
+                    <span class="icon">🚪</span> Cerrar Sesión
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <section id="sec-inicio" class="content-section active">
+                <h1 style="font-size: 2.2rem; margin-bottom: 20px;">Panel de Administración 📊</h1>
+                <p class="subtitle" style="margin-bottom: 20px;">Bienvenido al panel de control de Proyecto Akaito.</p>
+                
+                <div class="card" style="border-color: #ff6b35; background-color: #fff5f0; margin-top: 30px;">
+                    <h3 style="color: #ff6b35;">Acceso Restringido</h3>
+                    <p style="margin-top: 10px;">
+                        Este panel es exclusivo para administradores del sistema. Desde aquí podrás gestionar usuarios, postulantes, eventos y visualizar reportes de actividad.
+                    </p>
+                </div>
+
+                <div class="profile-grid" style="margin-top: 30px;">
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">📊 Estadísticas</h3>
+                        <p style="margin: 15px 0; font-size: 1.8rem; font-weight: 700; color: var(--accent);">--</p>
+                        <p style="color: var(--text-muted);">Usuarios activos</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">📋 Pendientes</h3>
+                        <p style="margin: 15px 0; font-size: 1.8rem; font-weight: 700; color: #ff9800;">--</p>
+                        <p style="color: var(--text-muted);">Postulantes por revisar</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">🎉 Eventos</h3>
+                        <p style="margin: 15px 0; font-size: 1.8rem; font-weight: 700; color: #4caf50;">--</p>
+                        <p style="color: var(--text-muted);">Eventos activos</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 8px;">⚠️ Alertas</h3>
+                        <p style="margin: 15px 0; font-size: 1.8rem; font-weight: 700; color: #f44336;">0</p>
+                        <p style="color: var(--text-muted);">Reportes nuevos</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-usuarios" class="content-section">
+                <h2>👥 Gestión de Usuarios</h2>
+                <p class="subtitle">Administra los usuarios activos en la plataforma.</p>
+                <div class="card" style="background-color: white; padding: 30px;">
+                    <p style="color: var(--text-muted); text-align: center;">Funcionalidades próximamente disponibles</p>
+                </div>
+            </section>
+
+            <section id="sec-postulantes" class="content-section">
+                <h2>📋 Gestión de Postulantes</h2>
+                <p class="subtitle">Revisa y aprueba solicitudes de nuevos miembros.</p>
+                
+                <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+                    <button id="btnCargarPostulantes" class="btn btn-primary">Recargar postulantes</button>
+                    <select id="filtroEstadoPostulantes" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">Todos</option>
+                        <option value="pendiente">Pendientes</option>
+                        <option value="aprobado">Aprobados</option>
+                        <option value="rechazado">Rechazados</option>
+                    </select>
+                </div>
+
+                <div id="contenidoPostulantes" style="background-color: white; border-radius: 8px; overflow: hidden;">
+                    <div style="padding: 30px; text-align: center; color: var(--text-muted);">
+                        <p>Cargando postulantes...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-eventos" class="content-section">
+                <h2>🎉 Gestión de Eventos</h2>
+                <p class="subtitle">Crea, edita y elimina eventos de la comunidad.</p>
+                <div class="card" style="background-color: white; padding: 30px;">
+                    <p style="color: var(--text-muted); text-align: center;">Funcionalidades próximamente disponibles</p>
+                </div>
+            </section>
+
+            <section id="sec-reportes" class="content-section">
+                <h2>📈 Reportes</h2>
+                <p class="subtitle">Visualiza estadísticas y análisis del sistema.</p>
+                <div class="card" style="background-color: white; padding: 30px;">
+                    <p style="color: var(--text-muted); text-align: center;">Funcionalidades próximamente disponibles</p>
+                </div>
+            </section>
+
+            <section id="sec-configuracion" class="content-section">
+                <h2>⚙️ Configuración</h2>
+                <p class="subtitle">Configura parámetros del sistema.</p>
+                <div class="card" style="background-color: white; padding: 30px;">
+                    <p style="color: var(--text-muted); text-align: center;">Funcionalidades próximamente disponibles</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/init.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/translate.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

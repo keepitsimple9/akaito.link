@@ -45,17 +45,19 @@
                 <a href="#" class="menu-item" data-section="chat">
                     <span class="icon">💬</span> Chat
                 </a>
+                <a href="#" class="menu-item" data-section="beneficios">
+                    <span class="icon">💑</span> Beneficios a parejas
+                </a>
                 <a href="#" class="menu-item" data-section="preguntas">
                     <span class="icon">📘</span> Preguntas
                 </a>
                 <a href="#" class="menu-item" data-section="ayuda">
                     <span class="icon">❓</span> Ayuda
                 </a>
+                <a href="#" class="menu-item" data-section="configuracion">
+                    <span class="icon">⚙️</span> Configuración
+                </a>
             </nav>
-
-            <div class="sidebar-quick-actions">
-                <button id="btnConfig" class="quick-action-btn" type="button" aria-label="Ir a configuracion">⚙ Configuracion</button>
-            </div>
 
             <div class="sidebar-footer">
                 <select id="languageSelector" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 0.9rem;" onchange="changeLanguage(this.value)">
@@ -72,6 +74,7 @@
             <section id="sec-inicio" class="content-section active">
                 <h1 style="font-size: 2.2rem; margin-bottom: 20px;">¡Hola, <span id="nombreUsuario">paisano</span>! 👋</h1>
                 <p class="subtitle" style="margin-bottom: 20px;">Bienvenido a tu panel privado de Proyecto Akaito.</p>
+                <p id="estadoConexionSupabase" style="margin-top: -10px; margin-bottom: 18px; font-size: 0.9rem; color: var(--text-muted);">Verificando conexion de perfil...</p>
                 
                 <div class="card" style="border-color: var(--accent); background-color: #fff5f6; margin-top: 30px;">
                     <h3 style="color: var(--accent);">Estado de tu membresía: <span style="font-weight: 400; color: var(--text-main);">Activo</span></h3>
@@ -86,40 +89,22 @@
                 <p class="subtitle">Organiza tus encuentros y revisa tu actividad reciente.</p>
 
                 <div class="citas-tabs" role="tablist" aria-label="Pestañas de citas">
-                    <button type="button" class="citas-tab-btn active" data-tab="crear">Crear Cita</button>
-                    <button type="button" class="citas-tab-btn" data-tab="historial">Historial de cita</button>
-                    <button type="button" class="citas-tab-btn" data-tab="invitaciones">Invitaciones de citas</button>
+                    <button type="button" class="citas-tab-btn active" data-tab="crear">Nueva invitación</button>
+                    <button type="button" class="citas-tab-btn" data-tab="recibidas">Recibidas</button>
+                    <button type="button" class="citas-tab-btn" data-tab="enviadas">Enviadas</button>
                 </div>
 
                 <div id="citas-tab-crear" class="citas-tab-panel active">
                     <div class="card" style="background-color: white;">
-                        <h3 style="margin-bottom: 12px;">Nueva cita</h3>
+                        <h3 style="margin-bottom: 12px;">Invitar a una cita</h3>
                         <form id="citaForm">
                             <div class="profile-grid">
-                                <div id="citaPersonaSingleGroup" class="form-group">
-                                    <label for="citaPersona">Con quién:</label>
-                                    <select id="citaPersona">
-                                        <option value="">Selecciona un usuario</option>
-                                        <option>Aiko Yamamoto</option>
-                                        <option>Haruto Sato</option>
-                                        <option>Mika Tanaka</option>
-                                    </select>
-                                </div>
-                                <div id="citaPersonaGrupoGroup" class="form-group" style="display: none;">
-                                    <label>Participantes del gokon:</label>
-                                    <div class="gokon-people-list">
-                                        <label class="gokon-person-item"><input type="checkbox" value="Aiko Yamamoto"> Aiko Yamamoto</label>
-                                        <label class="gokon-person-item"><input type="checkbox" value="Haruto Sato"> Haruto Sato</label>
-                                        <label class="gokon-person-item"><input type="checkbox" value="Mika Tanaka"> Mika Tanaka</label>
-                                        <label class="gokon-person-item"><input type="checkbox" value="Kenji Mori"> Kenji Mori</label>
-                                        <label class="gokon-person-item"><input type="checkbox" value="Naomi Kato"> Naomi Kato</label>
-                                    </div>
-                                </div>
                                 <div class="form-group">
                                     <label for="citaTipo">Tipo de cita:</label>
-                                    <select id="citaTipo">
+                                    <select id="citaTipo" required>
+                                        <option value="">Selecciona un tipo</option>
                                         <option value="normal">Normal</option>
-                                        <option value="gokon">gokon</option>
+                                        <option value="gokon">Gokon (Grupo)</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -130,23 +115,76 @@
                                     <label for="citaHora">Hora:</label>
                                     <input type="time" id="citaHora">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="grid-column: 1 / -1;">
                                     <label for="citaLugar">Lugar:</label>
                                     <input type="text" id="citaLugar" placeholder="Ej. Cafeteria del centro">
                                 </div>
                             </div>
-                            <p id="citaFeedback" class="subtitle" style="margin-top: 10px;"></p>
-                            <button type="submit" class="btn-primary" style="margin-top: 15px; padding: 10px 16px;">Crear cita</button>
+
+                            <!-- Cita normal: selector de 1 persona -->
+                            <div id="citaNormalGroup" style="margin-top: 16px;">
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="citaFiltroPais">País:</label>
+                                    <select id="citaFiltroPais">
+                                        <option value="">Todos los países</option>
+                                        <option value="pe">Perú</option>
+                                        <option value="ar">Argentina</option>
+                                        <option value="cl">Chile</option>
+                                        <option value="co">Colombia</option>
+                                        <option value="mx">México</option>
+                                        <option value="es">España</option>
+                                        <option value="jp">Japón</option>
+                                        <option value="us">Estados Unidos</option>
+                                        <option value="ca">Canadá</option>
+                                        <option value="br">Brasil</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="citaPersona">Con quién:</label>
+                                    <select id="citaPersona">
+                                        <option value="">Selecciona un usuario</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Gokon: selectores de chicos y chicas -->
+                            <div id="citaGokonGroup" style="display:none; margin-top: 16px;">
+                                <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:14px;">
+                                    Mínimo 2 y máximo 5 participantes de cada género. Los pares no necesitan ser iguales.
+                                </p>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    <div>
+                                        <label style="font-weight:600; display:block; margin-bottom:8px;">
+                                            👦 Chicos — <span id="contadorChicos">0</span>/5
+                                        </label>
+                                        <div id="listaChicosGokon" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                                            <p style="color:var(--text-muted); font-size:0.9rem;">Cargando...</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style="font-weight:600; display:block; margin-bottom:8px;">
+                                            👧 Chicas — <span id="contadorChicas">0</span>/5
+                                        </label>
+                                        <div id="listaChicasGokon" style="display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto; border:1px solid #e0e0e0; border-radius:8px; padding:10px;">
+                                            <p style="color:var(--text-muted); font-size:0.9rem;">Cargando...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p id="citaFeedback" class="subtitle" style="margin-top: 12px;"></p>
+                            <button type="submit" class="btn-primary" style="margin-top: 15px; padding: 10px 16px;">Enviar invitación</button>
                         </form>
                     </div>
                 </div>
 
-                <div id="citas-tab-historial" class="citas-tab-panel">
-                    <div id="citaHistorialList" class="profile-grid"></div>
+                <div id="citas-tab-recibidas" class="citas-tab-panel">
+                    <div id="citaRecibidasList" class="profile-grid"></div>
                 </div>
 
-                <div id="citas-tab-invitaciones" class="citas-tab-panel">
-                    <div id="citaInvitacionesList" class="profile-grid"></div>
+                <div id="citas-tab-enviadas" class="citas-tab-panel">
+                    <div id="citaEnviadasList" class="profile-grid"></div>
                 </div>
             </section>
 
@@ -154,40 +192,46 @@
                 <h2>🎉 Eventos</h2>
                 <p class="subtitle">Participa en eventos especiales de la comunidad.</p>
 
-                <div class="profile-grid">
-                    <div class="card" style="background-color: white;">
-                        <h3 style="margin-bottom: 8px;">Shumikon</h3>
-                        <p style="margin-bottom: 12px; color: var(--text-muted);">Evento tematico por afinidades e intereses compartidos.</p>
-                        <p style="margin-bottom: 12px;">Formato: grupos pequenos con dinamicas guiadas.</p>
-                        <button class="btn-primary" style="padding: 10px 16px;">Ver proximas fechas</button>
-                    </div>
+                <div class="citas-tabs" role="tablist" aria-label="Pestañas de eventos">
+                    <button type="button" class="citas-tab-btn active" data-eventos-tab="buscar">Buscar evento</button>
+                    <button type="button" class="citas-tab-btn" data-eventos-tab="historial">Historial de eventos</button>
+                </div>
 
-                    <div class="card" style="background-color: white;">
-                        <h3 style="margin-bottom: 8px;">Machikon</h3>
-                        <p style="margin-bottom: 12px; color: var(--text-muted);">Encuentros sociales amplios para conocer mas personas.</p>
-                        <p style="margin-bottom: 12px;">Formato: networking romantico en espacios abiertos.</p>
-                        <button class="btn-primary" style="padding: 10px 16px;">Ver proximas fechas</button>
+                <div id="eventos-tab-buscar" class="citas-tab-panel active" style="margin-top: 20px;">
+                    <div class="profile-grid">
+                        <div class="card" style="background-color: white;">
+                            <h3 style="margin-bottom: 8px;">Shumikon</h3>
+                            <p style="margin-bottom: 12px; color: var(--text-muted);">Evento tematico por afinidades e intereses compartidos.</p>
+                            <p style="margin-bottom: 12px;">Formato: grupos pequenos con dinamicas guiadas.</p>
+                            <button class="btn-primary" style="padding: 10px 16px;">Ver proximas fechas</button>
+                        </div>
+
+                        <div class="card" style="background-color: white;">
+                            <h3 style="margin-bottom: 8px;">Machikon</h3>
+                            <p style="margin-bottom: 12px; color: var(--text-muted);">Encuentros sociales amplios para conocer mas personas.</p>
+                            <p style="margin-bottom: 12px;">Formato: networking romantico en espacios abiertos.</p>
+                            <button class="btn-primary" style="padding: 10px 16px;">Ver proximas fechas</button>
+                        </div>
                     </div>
                 </div>
 
-                <hr class="profile-divider">
-
-                <h3 class="profile-block-title">Historial de eventos</h3>
-                <div class="profile-grid">
-                    <div class="card" style="background-color: white;">
-                        <h3 style="margin-bottom: 8px;">Shumikon - Edicion Primavera</h3>
-                        <p style="margin-bottom: 8px; color: var(--text-muted);">15/05/2026 · Centro Cultural Nikkei</p>
-                        <p style="margin: 0;">Asistentes: 42 · Estado: Finalizado</p>
-                    </div>
-                    <div class="card" style="background-color: white;">
-                        <h3 style="margin-bottom: 8px;">Machikon - Encuentro Urbano</h3>
-                        <p style="margin-bottom: 8px; color: var(--text-muted);">22/06/2026 · Barrio Historico</p>
-                        <p style="margin: 0;">Asistentes: 58 · Estado: Finalizado</p>
-                    </div>
-                    <div class="card" style="background-color: white;">
-                        <h3 style="margin-bottom: 8px;">Shumikon - Anime & Cafe</h3>
-                        <p style="margin-bottom: 8px; color: var(--text-muted);">08/07/2026 · Akari Coffee House</p>
-                        <p style="margin: 0;">Asistentes: 35 · Estado: Finalizado</p>
+                <div id="eventos-tab-historial" class="citas-tab-panel" style="margin-top: 20px;">
+                    <div class="profile-grid">
+                        <div class="card" style="background-color: white;">
+                            <h3 style="margin-bottom: 8px;">Shumikon - Edicion Primavera</h3>
+                            <p style="margin-bottom: 8px; color: var(--text-muted);">15/05/2026 · Centro Cultural Nikkei</p>
+                            <p style="margin: 0;">Asistentes: 42 · Estado: Finalizado</p>
+                        </div>
+                        <div class="card" style="background-color: white;">
+                            <h3 style="margin-bottom: 8px;">Machikon - Encuentro Urbano</h3>
+                            <p style="margin-bottom: 8px; color: var(--text-muted);">22/06/2026 · Barrio Historico</p>
+                            <p style="margin: 0;">Asistentes: 58 · Estado: Finalizado</p>
+                        </div>
+                        <div class="card" style="background-color: white;">
+                            <h3 style="margin-bottom: 8px;">Shumikon - Anime & Cafe</h3>
+                            <p style="margin-bottom: 8px; color: var(--text-muted);">08/07/2026 · Akari Coffee House</p>
+                            <p style="margin: 0;">Asistentes: 35 · Estado: Finalizado</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -204,12 +248,42 @@
                             <h3 class="profile-block-title">📋 Información Básica</h3>
                             <div class="profile-grid">
                                 <div class="form-group">
-                                    <label for="profNombre">Nombre de perfil:</label>
+                                    <label for="profNombre">Nombre(s):</label>
                                     <input type="text" id="profNombre" required placeholder="Tu nombre público">
                                 </div>
                                 <div class="form-group">
-                                    <label for="profEdad">Edad:</label>
-                                    <input type="number" id="profEdad" min="18" max="99" required>
+                                    <label for="profApellidoPaterno">Apellido Paterno:</label>
+                                    <input type="text" id="profApellidoPaterno" required placeholder="Tu apellido paterno">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profApellidoMaterno">Apellido Materno:</label>
+                                    <input type="text" id="profApellidoMaterno" required placeholder="Tu apellido materno">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profApodo">Apodo (Opcional):</label>
+                                    <input type="text" id="profApodo" placeholder="Ej. Aki">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profPais">País:</label>
+                                    <select id="profPais" required>
+                                        <option value="">Selecciona tu país</option>
+                                        <option value="pe">Perú</option>
+                                        <option value="ar">Argentina</option>
+                                        <option value="cl">Chile</option>
+                                        <option value="co">Colombia</option>
+                                        <option value="mx">México</option>
+                                        <option value="es">España</option>
+                                        <option value="jp">Japón</option>
+                                        <option value="us">Estados Unidos</option>
+                                        <option value="ca">Canadá</option>
+                                        <option value="br">Brasil</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profFechaNacimiento">Fecha de nacimiento:</label>
+                                    <input type="date" id="profFechaNacimiento" required>
+                                    <small id="profEdadTexto" style="display: block; margin-top: 6px; color: var(--text-muted);">Edad: -- años</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="profGenero">Género:</label>
@@ -220,12 +294,32 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="profWhatsapp">WhatsApp:</label>
-                                    <input type="tel" id="profWhatsapp" required>
+                                    <label for="profWhatsapp">WhatsApp <span style="color:var(--text-muted); font-size:0.85rem;">(Opcional)</span>:</label>
+                                    <input type="tel" id="profWhatsapp" placeholder="Ej. 987654321">
+                                    <select id="profMostrarWhatsapp" style="width:100%; margin-top:6px;">
+                                        <option value="nadie">🔒 No mostrar a nadie</option>
+                                        <option value="conocidos">👥 Solo conocidos (amigos)</option>
+                                        <option value="publico">🌐 Público</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="profInstagram">Instagram (Opcional):</label>
+                                    <label for="profInstagram">Instagram <span style="color:var(--text-muted); font-size:0.85rem;">(Opcional)</span>:</label>
                                     <input type="text" id="profInstagram" placeholder="@tu_usuario">
+                                    <select id="profMostrarInstagram" style="width:100%; margin-top:6px;">
+                                        <option value="nadie">🔒 No mostrar a nadie</option>
+                                        <option value="conocidos">👥 Solo conocidos (amigos)</option>
+                                        <option value="publico">🌐 Público</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="profEmail">Correo electrónico:</label>
+                                    <input type="email" id="profEmail" placeholder="nuevo@correo.com">
+                                    <p style="color:var(--text-muted); font-size:0.8rem; margin-top:4px;">Correo actual: <span id="profEmailDisplay" style="font-weight:600;"></span> · Cambiar requiere confirmación por email.</p>
+                                    <select id="profMostrarEmail" style="width:100%; margin-top:6px;">
+                                        <option value="nadie">🔒 No mostrar a nadie</option>
+                                        <option value="conocidos">👥 Solo conocidos (amigos)</option>
+                                        <option value="publico">🌐 Público</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -299,11 +393,54 @@
                     <button type="button" class="usuarios-tab-btn active" data-tab="buscar">Buscar usuario</button>
                     <button type="button" class="usuarios-tab-btn" data-tab="amigos">Amigos</button>
                     <button type="button" class="usuarios-tab-btn" data-tab="solicitudes">Solicitudes de amigos</button>
+                    <button type="button" class="usuarios-tab-btn" data-tab="solicitudes-pareja">Solicitudes de pareja</button>
                 </div>
 
                 <div id="usuarios-tab-buscar" class="usuarios-tab-panel active">
-                    <input type="text" id="buscadorEmparejador" placeholder="Buscar por nombre..." 
-                           style="width: 100%; padding: 12px; margin-bottom: 25px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="buscadorEmparejador">Nombre / Bio / Intereses:</label>
+                            <input type="text" id="buscadorEmparejador" placeholder="Buscar por nombre, intereses..." style="width:100%;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="filtroGenero">Género:</label>
+                            <select id="filtroGenero" style="width:100%;">
+                                <option value="">Todos</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="femenino">Femenino</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="filtroEdad">Rango de edad:</label>
+                            <select id="filtroEdad" style="width:100%;">
+                                <option value="">Todos</option>
+                                <option value="18-25">18 – 25</option>
+                                <option value="26-35">26 – 35</option>
+                                <option value="36-50">36 – 50</option>
+                                <option value="51+">51+</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label for="filtroPais">País:</label>
+                            <select id="filtroPais" style="width:100%;">
+                                <option value="">Todos</option>
+                                <option value="Perú">Perú</option>
+                                <option value="Argentina">Argentina</option>
+                                <option value="Chile">Chile</option>
+                                <option value="Colombia">Colombia</option>
+                                <option value="México">México</option>
+                                <option value="España">España</option>
+                                <option value="Japón">Japón</option>
+                                <option value="Estados Unidos">Estados Unidos</option>
+                                <option value="Canadá">Canadá</option>
+                                <option value="Brasil">Brasil</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+                        <button id="btnLimpiarFiltros" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:0.9rem;">Limpiar filtros</button>
+                    </div>
 
                     <div id="listaUsuarios" class="profile-grid">
                         <p>Cargando miembros...</p>
@@ -319,6 +456,12 @@
                 <div id="usuarios-tab-solicitudes" class="usuarios-tab-panel">
                     <div id="listaSolicitudes" class="profile-grid">
                         <p>Cargando solicitudes...</p>
+                    </div>
+                </div>
+
+                <div id="usuarios-tab-solicitudes-pareja" class="usuarios-tab-panel">
+                    <div id="listaSolicitudesPareja" class="profile-grid">
+                        <p>Cargando solicitudes de pareja...</p>
                     </div>
                 </div>
             </section>
@@ -353,6 +496,26 @@
                                 <p id="verNombre" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
                             </div>
                             <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Apellido Paterno</p>
+                                <p id="verApellidoPaterno" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Apellido Materno</p>
+                                <p id="verApellidoMaterno" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Apodo</p>
+                                <p id="verApodo" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">País</p>
+                                <p id="verPais" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Fecha de nacimiento</p>
+                                <p id="verFechaNacimiento" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
                                 <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Edad</p>
                                 <p id="verEdad" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
                             </div>
@@ -367,6 +530,10 @@
                             <div style="margin-bottom: 15px;">
                                 <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Instagram</p>
                                 <p id="verInstagram" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Correo</p>
+                                <p id="verEmail" style="margin: 5px 0; font-weight: 600; font-size: 1.1rem;">-</p>
                             </div>
                         </div>
                     </div>
@@ -393,6 +560,21 @@
 
                     <button id="btnEnviarMensajeOtro" class="btn-primary" style="width: 100%; padding: 12px; margin-top: 20px;">
                         💬 Enviar Mensaje
+                    </button>
+                    <button id="btnSolicitudAmistad" style="width:100%; padding:12px; margin-top:10px; background:white; border:1px solid #ccc; color:#999; border-radius:8px; cursor:default; font-size:1rem; display:none;" disabled>
+                        ⏳ Solicitud de amistad enviada
+                    </button>
+                    <button id="btnDejarAmigo" style="width:100%; padding:12px; margin-top:10px; background:white; border:1px solid #dee2e6; border-radius:8px; cursor:pointer; font-size:1rem; display:none;">
+                        👋 Dejar de ser amigos
+                    </button>
+                    <button id="btnSolicitarParejaPerfil" style="width:100%; padding:12px; margin-top:10px; background:white; border:1px solid var(--accent); color:var(--accent); border-radius:8px; cursor:pointer; font-size:1rem; font-weight:600; display:none;">
+                        💑 Solicitar pareja
+                    </button>
+                    <button id="btnSolicitudParejaEnviada" style="width:100%; padding:12px; margin-top:10px; background:white; border:1px solid #ccc; color:#999; border-radius:8px; cursor:default; font-size:1rem; display:none;" disabled>
+                        ⏳ Solicitud de pareja enviada
+                    </button>
+                    <button id="btnTerminarParejaPerfil" style="width:100%; padding:12px; margin-top:10px; background:white; border:1px solid #f44336; color:#f44336; border-radius:8px; cursor:pointer; font-size:1rem; display:none;">
+                        💔 Dejar de ser pareja
                     </button>
                 </div>
             </section>
@@ -444,12 +626,110 @@
                     <p>Escríbenos directamente a nuestro WhatsApp de soporte o revisa las preguntas frecuentes de la comunidad.</p>
                 </div>
             </section>
+
+            <section id="sec-configuracion" class="content-section">
+                <h2>⚙️ Configuración</h2>
+                <p class="subtitle">Ajusta tus preferencias dentro de la plataforma.</p>
+
+                <div class="card" style="background-color: white; margin-top: 20px;">
+                    <h3 style="margin-bottom: 16px;">🌐 Idioma</h3>
+                    <div class="form-group" style="max-width: 260px;">
+                        <label for="configIdioma">Idioma de la interfaz:</label>
+                        <select id="configIdioma" onchange="changeLanguage(this.value)" style="width:100%;">
+                            <option value="es">Español</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card" style="background-color: white; margin-top: 20px;">
+                    <h3 style="margin-bottom: 16px;">🎨 Apariencia</h3>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <span>Modo oscuro:</span>
+                        <button id="btnThemeConfig" class="btn-primary" style="padding: 8px 18px;" onclick="document.getElementById('btnThemeGlobal').click(); this.textContent = document.body.classList.contains('dark') ? 'Activado' : 'Desactivado';">Cambiar tema</button>
+                    </div>
+                </div>
+
+                <div class="card" style="background-color: white; margin-top: 20px;">
+                    <h3 style="margin-bottom: 16px;">🔒 Seguridad</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 14px;">Cambia tu contraseña cuando lo necesites.</p>
+                    <a href="recuperar-contrasena.html" class="btn-primary" style="padding: 8px 18px; display: inline-block; text-decoration: none;">Cambiar contraseña</a>
+                </div>
+
+                <div class="card" style="background-color: white; margin-top: 20px;">
+                    <h3 style="margin-bottom: 16px;">🚨 Zona de peligro</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 14px;">Cerrar sesión en todos los dispositivos.</p>
+                    <button id="btnCerrarSesionConfig" class="btn-primary" style="padding: 8px 18px; background: #d9534f; border-color: #d9534f;">Cerrar sesión</button>
+                </div>
+            </section>
+
+            <section id="sec-beneficios" class="content-section">
+                <h2>💑 Beneficios a Parejas</h2>
+                <p class="subtitle">Formaliza tu relación dentro de la comunidad y accede a beneficios exclusivos.</p>
+
+                <!-- Panel de estado de pareja -->
+                <div id="pareja-panel" style="margin-bottom: 30px;">
+                    <div class="card" style="background-color: white;">
+                        <div id="pareja-estado">
+                            <p style="color: var(--text-muted); text-align: center;">Cargando estado...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="profile-divider">
+                <h3 class="profile-block-title" style="margin-bottom: 20px;">Beneficios disponibles próximamente</h3>
+
+                <div class="profile-grid">
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 10px;">🛍️ Descuentos exclusivos</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 10px;">Próximamente disponible</p>
+                        <p>Convenios con restaurantes, hoteles y experiencias para disfrutar juntos a precio preferencial.</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 10px;">🍼 Apoyo a padres</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 10px;">Próximamente disponible</p>
+                        <p>Préstamo de cunas, coches y artículos de bebé para las familias que crecen dentro de la comunidad.</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 10px;">🏫 Descuentos en colegios</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 10px;">Próximamente disponible</p>
+                        <p>Tarifas preferenciales en colegios con enfoque bicultural o japonés para hijos de miembros.</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 10px;">💒 Apoyo para la boda</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 10px;">Próximamente disponible</p>
+                        <p>Contacto con proveedores de bodas con sensibilidad cultural japonesa y convenios especiales para miembros.</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 10px;">🏠 Asesoría de vivienda</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 10px;">Próximamente disponible</p>
+                        <p>Orientación para parejas que buscan establecerse, con contactos en inmobiliarias aliadas.</p>
+                    </div>
+
+                    <div class="card" style="background-color: white;">
+                        <h3 style="margin-bottom: 10px;">📬 Mantente informado</h3>
+                        <p style="margin-bottom: 14px;">Estos beneficios irán activándose progresivamente. Te notificaremos cuando cada uno esté disponible.</p>
+                        <span style="display: inline-block; background-color: var(--accent); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;">Disponible próximamente</span>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- Ejemplo de cómo deberían ir cargados -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module" src="js/init.js"></script>
+    <!-- Inicializar Supabase antes de los scripts de la app para evitar condiciones de carrera -->
+    <script>
+        (function () {
+            if (window.supabaseClient || typeof supabase === 'undefined') return;
+            window.supabaseClient = supabase.createClient(
+                'https://jlqfrsnyzgfnmzfrzxrk.supabase.co',
+                'sb_publishable_T9HkJDmciCjA0FOh44riEw_ldRz22B0'
+            );
+        })();
+    </script>
     <script src="js/member-redirect.js"></script>
     <script src="js/api.js"></script>
     <script src="js/ui.js"></script>
@@ -458,5 +738,322 @@
     <script src="js/app.js"></script>
     <script src="js/translate.js"></script>
     <script src="js/theme.js"></script>
+    <script>
+        (function () {
+            function withTimeout(promise, ms) {
+                return Promise.race([
+                    promise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+                ]);
+            }
+
+            function activarSeccion(clave) {
+                if (!clave) return;
+                document.querySelectorAll('.menu-item').forEach(function (item) {
+                    item.classList.toggle('active', item.getAttribute('data-section') === clave);
+                });
+                document.querySelectorAll('.content-section').forEach(function (sec) {
+                    sec.classList.toggle('active', sec.id === 'sec-' + clave);
+                });
+            }
+
+            function setupFallbackNavegacion() {
+                if (window.__akaitoFallbackNavReady) return;
+                window.__akaitoFallbackNavReady = true;
+
+                document.querySelectorAll('.menu-item').forEach(function (item) {
+                    item.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        activarSeccion(item.getAttribute('data-section'));
+                    });
+                });
+            }
+
+            function setEstadoConexion(texto, tipo) {
+                var estado = document.getElementById('estadoConexionSupabase');
+                if (!estado) return;
+                var color = 'var(--text-muted)';
+                if (tipo === 'ok') color = '#2e7d32';
+                if (tipo === 'error') color = '#c62828';
+                estado.style.color = color;
+                estado.textContent = texto;
+            }
+
+            function applyPerfilToForm(perfil, emailAuth) {
+                if (!perfil) return;
+
+                function setValue(id, value) {
+                    var el = document.getElementById(id);
+                    if (el) el.value = value || '';
+                }
+
+                setValue('profNombre', perfil.nombre);
+                setValue('profApellidoPaterno', perfil.apellido_paterno);
+                setValue('profApellidoMaterno', perfil.apellido_materno);
+                setValue('profApodo', perfil.apodo);
+                setValue('profPais', perfil.pais);
+                setValue('profFechaNacimiento', perfil.fecha_nacimiento);
+                setValue('profGenero', perfil.genero);
+                setValue('profWhatsapp', perfil.whatsapp);
+                setValue('profInstagram', perfil.instagram);
+                setValue('profBio', perfil.bio);
+                setValue('profIntereses', perfil.intereses);
+                setValue('profBusca', perfil.busca || 'pareja');
+                setValue('profMostrarWhatsapp', perfil.mostrar_whatsapp || 'nadie');
+                setValue('profMostrarInstagram', perfil.mostrar_instagram || 'nadie');
+                setValue('profMostrarEmail', perfil.mostrar_email || 'nadie');
+
+                var emailDisplay = document.getElementById('profEmailDisplay');
+                if (emailDisplay) {
+                    emailDisplay.textContent = perfil.email || emailAuth || '';
+                }
+            }
+
+            async function setupFallbackEstadoConexion() {
+                try {
+                    setEstadoConexion('Verificando conexion de perfil...', 'info');
+
+                    var client = window.supabaseClient;
+                    if (!client && typeof supabase !== 'undefined') {
+                        client = supabase.createClient(
+                            'https://jlqfrsnyzgfnmzfrzxrk.supabase.co',
+                            'sb_publishable_T9HkJDmciCjA0FOh44riEw_ldRz22B0'
+                        );
+                        window.supabaseClient = client;
+                    }
+
+                    if (!client) {
+                        setEstadoConexion('No se pudo inicializar cliente Supabase.', 'error');
+                        return;
+                    }
+
+                    var sessionResp = await withTimeout(client.auth.getSession(), 8000);
+                    var session = sessionResp && sessionResp.data ? sessionResp.data.session : null;
+                    if (!session || !session.user) {
+                        setEstadoConexion('No hay sesion activa en Auth.', 'error');
+                        return;
+                    }
+
+                    var perfilResp = await withTimeout(
+                        client
+                            .from('usuarios')
+                            .select('id,email,nombre,apellido_paterno,apellido_materno,apodo,pais,fecha_nacimiento,genero,whatsapp,instagram,bio,intereses,busca,mostrar_whatsapp,mostrar_instagram,mostrar_email,foto1,foto2')
+                            .ilike('email', session.user.email)
+                            .maybeSingle(),
+                        10000
+                    );
+
+                    if (perfilResp.error) {
+                        setEstadoConexion('Auth conectada. Error tabla usuarios: ' + (perfilResp.error.message || 'desconocido'), 'error');
+                        return;
+                    }
+
+                    if (!perfilResp.data) {
+                        setEstadoConexion('Auth conectada. No existe fila en usuarios para tu correo.', 'error');
+                        return;
+                    }
+
+                    var nombreEl = document.getElementById('nombreUsuario');
+                    var nombreBD = (perfilResp.data.nombre || '').trim();
+                    if (nombreEl && nombreBD) {
+                        nombreEl.textContent = nombreBD.split(' ')[0];
+                    }
+
+                    applyPerfilToForm(perfilResp.data, session.user.email || '');
+
+                    setEstadoConexion('Auth y perfil conectados correctamente.', 'ok');
+                } catch (error) {
+                    setEstadoConexion('Fallo verificando perfil: ' + ((error && error.message) || 'desconocido'), 'error');
+                }
+            }
+
+            function setupFallbackGuardarPerfil() {
+                if (window.__akaitoFallbackProfileSaveReady) return;
+                window.__akaitoFallbackProfileSaveReady = true;
+
+                var form = document.getElementById('profileForm');
+                if (!form) return;
+
+                form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+
+                    try {
+                        var client = window.supabaseClient;
+                        if (!client && typeof supabase !== 'undefined') {
+                            client = supabase.createClient(
+                                'https://jlqfrsnyzgfnmzfrzxrk.supabase.co',
+                                'sb_publishable_T9HkJDmciCjA0FOh44riEw_ldRz22B0'
+                            );
+                            window.supabaseClient = client;
+                        }
+
+                        if (!client) {
+                            setEstadoConexion('No se pudo inicializar cliente Supabase para guardar perfil.', 'error');
+                            alert('No se pudo inicializar la conexión para guardar tu perfil.');
+                            return;
+                        }
+
+                        var sessionResp = await withTimeout(client.auth.getSession(), 8000);
+                        var session = sessionResp && sessionResp.data ? sessionResp.data.session : null;
+                        if (!session || !session.user || !session.user.email) {
+                            setEstadoConexion('No hay sesion activa para guardar perfil.', 'error');
+                            alert('Debes iniciar sesión para guardar el perfil.');
+                            return;
+                        }
+
+                        var perfilIdResp = await withTimeout(
+                            client.from('usuarios').select('id,email').ilike('email', session.user.email).maybeSingle(),
+                            10000
+                        );
+
+                        if (perfilIdResp.error) {
+                            setEstadoConexion('Error localizando perfil: ' + (perfilIdResp.error.message || 'desconocido'), 'error');
+                            alert('Error localizando perfil: ' + (perfilIdResp.error.message || 'desconocido'));
+                            return;
+                        }
+
+                        if (!perfilIdResp.data || !perfilIdResp.data.id) {
+                            setEstadoConexion('No se encontró tu fila en usuarios para guardar.', 'error');
+                            alert('No se encontró tu perfil en la tabla usuarios.');
+                            return;
+                        }
+
+                        var getValue = function (id) {
+                            var el = document.getElementById(id);
+                            return el ? el.value : '';
+                        };
+
+                        var payload = {
+                            nombre: (getValue('profNombre') || '').trim(),
+                            apellido_paterno: (getValue('profApellidoPaterno') || '').trim() || null,
+                            apellido_materno: (getValue('profApellidoMaterno') || '').trim() || null,
+                            apodo: (getValue('profApodo') || '').trim() || null,
+                            pais: (getValue('profPais') || '').trim() || null,
+                            fecha_nacimiento: (getValue('profFechaNacimiento') || '').trim() || null,
+                            genero: (getValue('profGenero') || '').trim() || null,
+                            whatsapp: (getValue('profWhatsapp') || '').trim() || null,
+                            instagram: (getValue('profInstagram') || '').trim() || null,
+                            bio: (getValue('profBio') || '').trim() || null,
+                            intereses: (getValue('profIntereses') || '').trim() || null,
+                            busca: (getValue('profBusca') || 'pareja').trim() || 'pareja',
+                            mostrar_whatsapp: getValue('profMostrarWhatsapp') || 'nadie',
+                            mostrar_instagram: getValue('profMostrarInstagram') || 'nadie',
+                            mostrar_email: getValue('profMostrarEmail') || 'nadie'
+                        };
+
+                        var updateResp = await withTimeout(
+                            client
+                                .from('usuarios')
+                                .update(payload)
+                                .eq('id', perfilIdResp.data.id)
+                                .select('id,nombre,email')
+                                .maybeSingle(),
+                            10000
+                        );
+
+                        if (updateResp.error) {
+                            setEstadoConexion('Error guardando perfil: ' + (updateResp.error.message || 'desconocido'), 'error');
+                            alert('Error guardando perfil: ' + (updateResp.error.message || 'desconocido'));
+                            return;
+                        }
+
+                        if (!updateResp.data) {
+                            setEstadoConexion('No se actualizó ninguna fila. Revisa políticas RLS de UPDATE en usuarios.', 'error');
+                            alert('No se pudo actualizar tu perfil. Posible bloqueo por políticas RLS.');
+                            return;
+                        }
+
+                        var nombreEl = document.getElementById('nombreUsuario');
+                        if (nombreEl && updateResp.data.nombre) {
+                            nombreEl.textContent = updateResp.data.nombre.split(' ')[0];
+                        }
+
+                        setEstadoConexion('Perfil guardado correctamente en Supabase.', 'ok');
+                        alert('Perfil guardado exitosamente.');
+                    } catch (error) {
+                        setEstadoConexion('Fallo guardando perfil: ' + ((error && error.message) || 'desconocido'), 'error');
+                        alert('Fallo guardando perfil: ' + ((error && error.message) || 'desconocido'));
+                    }
+                }, true);
+            }
+
+            function setupFallbackCerrarSesion() {
+                if (window.__akaitoFallbackLogoutReady) return;
+                window.__akaitoFallbackLogoutReady = true;
+
+                async function cerrarSesionFallback(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                    }
+
+                    try {
+                        var client = window.supabaseClient;
+                        if (!client && typeof supabase !== 'undefined') {
+                            client = supabase.createClient(
+                                'https://jlqfrsnyzgfnmzfrzxrk.supabase.co',
+                                'sb_publishable_T9HkJDmciCjA0FOh44riEw_ldRz22B0'
+                            );
+                            window.supabaseClient = client;
+                        }
+
+                        if (client) {
+                            await withTimeout(client.auth.signOut(), 8000);
+                        }
+                    } catch (error) {
+                        // Aunque falle signOut remoto, redirigimos para no bloquear al usuario.
+                    } finally {
+                        window.location.href = 'index.html';
+                    }
+                }
+
+                var btn1 = document.getElementById('btnCerrarSesion');
+                if (btn1) btn1.addEventListener('click', cerrarSesionFallback, true);
+
+                var btn2 = document.getElementById('btnCerrarSesionConfig');
+                if (btn2) btn2.addEventListener('click', cerrarSesionFallback, true);
+            }
+
+            async function setupFallbackNombre() {
+                var elNombre = document.getElementById('nombreUsuario');
+                if (!elNombre) return;
+
+                if (elNombre.textContent && elNombre.textContent.trim() && elNombre.textContent.trim() !== 'paisano') {
+                    return;
+                }
+
+                try {
+                    var client = window.supabaseClient;
+                    if (!client && typeof supabase !== 'undefined') {
+                        client = supabase.createClient(
+                            'https://jlqfrsnyzgfnmzfrzxrk.supabase.co',
+                            'sb_publishable_T9HkJDmciCjA0FOh44riEw_ldRz22B0'
+                        );
+                        window.supabaseClient = client;
+                    }
+
+                    if (!client) return;
+
+                    var sessionResp = await withTimeout(client.auth.getSession(), 8000);
+                    var session = sessionResp && sessionResp.data ? sessionResp.data.session : null;
+                    var email = session && session.user ? (session.user.email || '') : '';
+                    if (email) {
+                        elNombre.textContent = email.split('@')[0] || 'paisano';
+                    }
+                } catch (error) {
+                    // Silenciar: es solo una capa de respaldo visual.
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                setupFallbackNavegacion();
+                setupFallbackNombre();
+                setupFallbackEstadoConexion();
+                setupFallbackGuardarPerfil();
+                setupFallbackCerrarSesion();
+            });
+        })();
+    </script>
 </body>
 </html>

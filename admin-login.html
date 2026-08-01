@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Administrador - Proyecto Akaito</title>
+    <link rel="icon" type="image/png" href="img/logo_akaito.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/i18n.js"></script>
+</head>
+<body>
+    <button id="btnThemeGlobal" class="theme-toggle-global" type="button" aria-label="Alternar modo nocturno o diurno">🌙 Nocturno</button>
+
+    <header>
+        <div class="container header-content">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 10px;">
+                <img src="img/logo_akaito.svg" alt="Proyecto Akaito" style="height: 40px; width: auto;">
+                <span>Proyecto Akaito</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <select id="languageSelector" style="padding: 5px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;" onchange="changeLanguage(this.value)">
+                    <option value="es">ES</option>
+                    <option value="ja">日本語</option>
+                </select>
+                <a href="login.html" style="text-decoration: none; color: var(--text-main); font-size: 0.9rem; font-weight: 600;">Miembros</a>
+                <span class="badge" style="background-color: #ff6b35; color: white;">Administrador</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="form-section" style="padding: 80px 0;">
+            <div style="background: linear-gradient(135deg, #fff5f0 0%, #ffe4d6 100%); border: 3px solid #ff6b35; border-radius: 12px; padding: 40px; margin-bottom: 40px; text-align: center;">
+                <p style="font-size: 3rem; margin: 0 0 15px 0;">🔐</p>
+                <p style="font-size: 1.5rem; font-weight: 700; color: #ff6b35; margin: 0 0 10px 0;">Panel de Administración</p>
+                <p style="font-size: 1rem; color: var(--text-main); margin: 0; line-height: 1.6;">
+                    Acceso restringido para administradores autorizados del sistema.
+                </p>
+            </div>
+
+            <form id="loginAdminForm">
+                <div class="form-group">
+                    <label for="loginAdminEmail">Correo Electrónico:</label>
+                    <input type="email" id="loginAdminEmail" required placeholder="admin@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginAdminPassword">Contraseña:</label>
+                    <input type="password" id="loginAdminPassword" required placeholder="Tu contraseña segura">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="background-color: #ff6b35; border-color: #ff6b35;">Acceder al Panel de Administración</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 30px; font-size: 0.9rem; color: var(--text-muted);">
+                <a href="login.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← Volver a acceso de miembros</a>
+            </p>
+
+            <p style="text-align: center; margin-top: 50px; font-size: 0.85rem; color: var(--text-muted); padding: 20px; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #ff6b35;">
+                ⚠️ <strong>Seguridad:</strong> Este formulario está encriptado. Nunca compartas tu contraseña con terceros.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Proyecto Akaito. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/init.js"></script>
+    <script src="js/member-redirect.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/translate.js"></script>
+    <script src="js/theme.js"></script>
+</body>
+</html>

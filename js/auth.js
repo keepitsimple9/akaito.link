@@ -113,21 +113,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 const password = document.getElementById('password').value;
                 const whatsapp = document.getElementById('whatsapp').value;
                 const instagram = document.getElementById('instagram').value;
-                const edad = document.getElementById('edad').value;
                 const genero = document.getElementById('genero').value;
+                const apellidoPaterno = document.getElementById('apellidoPaterno')?.value || '';
+                const apellidoMaterno = document.getElementById('apellidoMaterno')?.value || '';
+                const apodo = document.getElementById('apodo')?.value || '';
+                const pais = document.getElementById('pais')?.value || '';
+                const fechaNacimiento = document.getElementById('fechaNacimiento')?.value || '';
+                const edad = window.calcularEdadDesdeFechaNacimiento && fechaNacimiento ? window.calcularEdadDesdeFechaNacimiento(fechaNacimiento) : null;
                 const client = getSupabaseClient();
 
                 // Guardar en tabla postulantes
+                const datosPostulante = {
+                    nombre,
+                    email,
+                    whatsapp,
+                    instagram,
+                    edad: edad !== null ? edad : null,
+                    genero
+                };
+
+                // Agregar campos opcionales si están disponibles
+                if (apellidoPaterno) datosPostulante.apellido_paterno = apellidoPaterno;
+                if (apellidoMaterno) datosPostulante.apellido_materno = apellidoMaterno;
+                if (apodo) datosPostulante.apodo = apodo;
+                if (pais) datosPostulante.pais = pais;
+                if (fechaNacimiento) datosPostulante.fecha_nacimiento = fechaNacimiento;
+
                 const { error: errorPostulante } = await client
                     .from('postulantes')
-                    .insert([{
-                        nombre,
-                        email,
-                        whatsapp,
-                        instagram,
-                        edad: parseInt(edad),
-                        genero
-                    }]);
+                    .insert([datosPostulante]);
 
                 let avisoPostulante = '';
                 if (errorPostulante) {
@@ -137,13 +151,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Registrar en Auth
-                const { data, error } = await Auth.registrar(email, password, {
+                const datosAuth = {
                     nombre,
-                    edad: parseInt(edad),
+                    edad: edad !== null ? edad : null,
                     whatsapp,
                     instagram,
                     genero
-                });
+                };
+
+                // Agregar campos opcionales si están disponibles
+                if (apellidoPaterno) datosAuth.apellido_paterno = apellidoPaterno;
+                if (apellidoMaterno) datosAuth.apellido_materno = apellidoMaterno;
+                if (apodo) datosAuth.apodo = apodo;
+                if (pais) datosAuth.pais = pais;
+                if (fechaNacimiento) datosAuth.fecha_nacimiento = fechaNacimiento;
+
+                const { data, error } = await Auth.registrar(email, password, datosAuth);
 
                 if (error) throw error;
 
@@ -265,6 +288,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('No se pudo actualizar la contraseña: ' + (err.message || err));
             } finally {
                 if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Guardar nueva contraseña'; }
+            }
+        });
+    }
+
+    // Manejador del formulario de login de administrador
+    const loginAdminForm = document.getElementById('loginAdminForm');
+    if (loginAdminForm) {
+        loginAdminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const loginAdminBtn = loginAdminForm.querySelector('button[type="submit"]');
+            if (loginAdminBtn) { loginAdminBtn.disabled = true; loginAdminBtn.textContent = 'Verificando...'; }
+
+            const email = document.getElementById('loginAdminEmail').value;
+            const password = document.getElementById('loginAdminPassword').value;
+
+            try {
+                const { data, error } = await Auth.iniciarSesion(email, password);
+                if (error) throw error;
+
+                // Verificar si el usuario es administrador
+                const client = getSupabaseClient();
+                const { data: usuario, error: errUsuario } = await client
+                    .from('usuarios')
+                    .select('es_admin')
+                    .eq('email', email)
+                    .single();
+
+                if (errUsuario || !usuario || !usuario.es_admin) {
+                    throw new Error('Este usuario no tiene permisos de administrador.');
+                }
+
+                window.location.href = 'admin-dashboard.html';
+            } catch (err) {
+                alert('No se pudo iniciar sesión como administrador: ' + (err.message || err));
+                // Desconectar si hay error
+                const client = getSupabaseClient();
+                await client.auth.signOut();
+            } finally {
+                if (loginAdminBtn) { loginAdminBtn.disabled = false; loginAdminBtn.textContent = 'Acceder como Administrador'; }
             }
         });
     }

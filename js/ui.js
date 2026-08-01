@@ -1,9 +1,48 @@
 // js/ui.js
 
 const UI = {
+    calcularEdad(fechaNacimiento) {
+        if (!fechaNacimiento) return null;
+
+        const fecha = new Date(fechaNacimiento);
+        if (Number.isNaN(fecha.getTime())) return null;
+
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - fecha.getFullYear();
+        const mesDiferencia = hoy.getMonth() - fecha.getMonth();
+        if (mesDiferencia < 0 || (mesDiferencia === 0 && hoy.getDate() < fecha.getDate())) {
+            edad -= 1;
+        }
+
+        return edad;
+    },
+
+    formatearEdad(edad) {
+        return edad !== null && edad !== undefined ? `${edad} años` : 'No especificada';
+    },
+
+    actualizarEdadDesdeNacimiento(fechaNacimientoInputId = 'profFechaNacimiento', salidaId = 'profEdadTexto') {
+        const input = document.getElementById(fechaNacimientoInputId);
+        const output = document.getElementById(salidaId);
+        if (!input || !output) return;
+
+        const edad = this.calcularEdad(input.value);
+        output.textContent = edad !== null ? `Edad: ${edad} años` : 'Edad: -- años';
+    },
+
+    obtenerNombreCompleto(usuario = {}) {
+        const partes = [
+            usuario.nombre || usuario.nombre_perfil || '',
+            usuario.apellido_paterno || usuario.apellidoPaterno || '',
+            usuario.apellido_materno || usuario.apellidoMaterno || ''
+        ].filter(Boolean);
+
+        return partes.join(' ').trim();
+    },
+
     obtenerNombreVisible(usuario = {}) {
-        const nombre = (usuario.nombre || usuario.nombre_perfil || '').trim();
-        if (nombre) return nombre;
+        const nombreCompleto = this.obtenerNombreCompleto(usuario);
+        if (nombreCompleto) return nombreCompleto;
 
         const email = (usuario.email || '').trim();
         if (email.includes('@')) {
@@ -35,14 +74,38 @@ const UI = {
     cargarPerfil(usuario) {
         if (!usuario) return;
         
-        document.getElementById('profNombre').value = usuario.nombre || usuario.nombre_perfil || '';
-        document.getElementById('profEdad').value = usuario.edad || '';
-        document.getElementById('profGenero').value = usuario.genero || '';
-        document.getElementById('profWhatsapp').value = usuario.whatsapp || '';
-        document.getElementById('profInstagram').value = usuario.instagram || '';
-        document.getElementById('profBio').value = usuario.bio || '';
-        document.getElementById('profIntereses').value = usuario.intereses || '';
-        document.getElementById('profBusca').value = usuario.busca || 'pareja';
+        const setValue = (id, value) => {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.value = value || '';
+            }
+        };
+
+        setValue('profNombre', usuario.nombre || usuario.nombre_perfil || '');
+        setValue('profApellidoPaterno', usuario.apellido_paterno || usuario.apellidoPaterno || '');
+        setValue('profApellidoMaterno', usuario.apellido_materno || usuario.apellidoMaterno || '');
+        setValue('profApodo', usuario.apodo || '');
+        setValue('profPais', usuario.pais || usuario.país || '');
+        setValue('profFechaNacimiento', usuario.fecha_nacimiento || usuario.fechaNacimiento || '');
+        setValue('profGenero', usuario.genero || '');
+        setValue('profWhatsapp', usuario.whatsapp || '');
+        setValue('profInstagram', usuario.instagram || '');
+
+        // Cargar selects de privacidad
+        const selWa = document.getElementById('profMostrarWhatsapp');
+        const selIg = document.getElementById('profMostrarInstagram');
+        const selEm = document.getElementById('profMostrarEmail');
+        const emailDisplay = document.getElementById('profEmailDisplay');
+        const profEmailInput = document.getElementById('profEmail');
+        if (selWa) selWa.value = usuario.mostrar_whatsapp || 'nadie';
+        if (selIg) selIg.value = usuario.mostrar_instagram || 'nadie';
+        if (selEm) selEm.value = usuario.mostrar_email || 'nadie';
+        if (emailDisplay) emailDisplay.textContent = usuario.email || '';
+        if (profEmailInput) profEmailInput.value = ''; // vacío — solo llenar para cambiar
+        setValue('profBio', usuario.bio || '');
+        setValue('profIntereses', usuario.intereses || '');
+        setValue('profBusca', usuario.busca || 'pareja');
+        this.actualizarEdadDesdeNacimiento();
     },
 
     // Para limpiar campos de formularios
@@ -76,17 +139,20 @@ const UI = {
             `;
         }
 
+        const edadTexto = UI.formatearEdad(UI.calcularEdad(usuario.fecha_nacimiento || usuario.fechaNacimiento));
+
         return `
             ${fotosHTML}
             <h4 class="js-user-name" style="cursor: pointer; color: var(--accent);">${UI.obtenerNombreVisible(usuario)}</h4>
-            <p style="color: var(--text-muted); margin: 5px 0;"><strong>Edad:</strong> ${usuario.edad || 'No especificada'} ${usuario.genero ? `(${usuario.genero})` : ''}</p>
+            <p style="color: var(--text-muted); margin: 5px 0;"><strong>Edad:</strong> ${edadTexto} ${usuario.genero ? `(${usuario.genero})` : ''}</p>
+            <p style="color: var(--text-muted); margin: 5px 0;"><strong>Apodo:</strong> ${usuario.apodo || 'Sin apodo'}</p>
             <p style="color: var(--text-muted); margin: 5px 0;"><strong>Bio:</strong> ${usuario.bio || 'Sin descripción'}</p>
             <p style="color: var(--text-muted); margin: 5px 0;"><strong>Intereses:</strong> ${usuario.intereses || 'No especificados'}</p>
         `;
     },
 
     // Para renderizar la lista de usuarios en la pestaña Buscar usuario
-    async renderizarUsuarios(usuarios, emailPropio, relaciones = {}) {
+    async renderizarUsuarios(usuarios, emailPropio, relaciones = {}, parejaInfo = {}) {
         const listaUsuarios = document.getElementById('listaUsuarios');
         if (!listaUsuarios) return;
         
@@ -95,9 +161,14 @@ const UI = {
             return;
         }
 
+        const generoOpuesto = parejaInfo.miGenero === 'masculino' ? 'femenino' : (parejaInfo.miGenero === 'femenino' ? 'masculino' : null);
+        const emailPropioNorm = (emailPropio || '').trim().toLowerCase();
+
         listaUsuarios.innerHTML = '';
+        let cantidadRenderizada = 0;
         usuarios.forEach(usuario => {
-            if (usuario.email !== emailPropio) {
+            const emailUsuarioNorm = (usuario.email || '').trim().toLowerCase();
+            if (emailUsuarioNorm !== emailPropioNorm) {
                 const div = document.createElement('div');
                 div.className = 'profile-card';
                 div.style.cssText = 'border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white; transition: transform 0.2s;';
@@ -118,10 +189,18 @@ const UI = {
                         accionesHTML = `<button class="btn-primary js-add-friend-btn" data-user-id="${usuario.id}" style="width: 100%; margin-top: 10px;">Agregar amigo</button>`;
                     }
                 }
+
+                // Botón de pareja: solo si es amigo, género opuesto y sin pareja activa/enviada
+                if (generoOpuesto && usuario.genero === generoOpuesto && !parejaInfo.tienePareja && esAmigo) {
+                    const yaEnviada = parejaInfo.idsConSolicitudEnviada?.has(usuarioId);
+                    const btnPareja = yaEnviada
+                        ? `<button style="width:100%; margin-top:8px; padding:8px; background:white; border:1px solid #ccc; border-radius:8px; color:#999; cursor:default;" disabled>⏳ Solicitud de pareja enviada</button>`
+                        : `<button class="js-solicitar-pareja-btn" data-user-id="${usuario.id}" style="width:100%; margin-top:8px; padding:8px; background:white; border:1px solid var(--accent); color:var(--accent); border-radius:8px; cursor:pointer; font-weight:600;">💑 Solicitar pareja</button>`;
+                    accionesHTML += btnPareja;
+                }
                 
                 div.innerHTML = `${UI.construirCardUsuario(usuario)}${accionesHTML}`;
                 
-                // Hacer clickeable el nombre para ver perfil completo
                 const nombreElement = div.querySelector('.js-user-name');
                 nombreElement.onclick = (e) => {
                     e.stopPropagation();
@@ -129,11 +208,16 @@ const UI = {
                 };
                 
                 listaUsuarios.appendChild(div);
+                cantidadRenderizada += 1;
             }
         });
+
+        if (cantidadRenderizada === 0) {
+            listaUsuarios.innerHTML = '<p>No hay otros miembros disponibles para mostrar.</p>';
+        }
     },
 
-    renderizarAmigos(amigos, usuariosPorEmail) {
+    renderizarAmigos(amigos, usuariosPorEmail, parejaInfo = {}) {
         const listaAmigos = document.getElementById('listaAmigos');
         if (!listaAmigos) return;
 
@@ -142,16 +226,32 @@ const UI = {
             return;
         }
 
+        const generoOpuesto = parejaInfo.miGenero === 'masculino' ? 'femenino' : (parejaInfo.miGenero === 'femenino' ? 'masculino' : null);
+
         listaAmigos.innerHTML = '';
         amigos.forEach((item) => {
             const usuario = usuariosPorEmail.get(String(item.usuarioId)) || { nombre: 'Usuario' };
+            const usuarioId = String(item.usuarioId);
             const div = document.createElement('div');
             div.className = 'profile-card';
             div.style.cssText = 'border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: white; transition: transform 0.2s;';
+
+            // Botón de pareja según estado
+            let btnParejaHTML = '';
+            if (generoOpuesto && usuario.genero === generoOpuesto && !parejaInfo.tienePareja) {
+                const yaEnviada = parejaInfo.idsConSolicitudEnviada?.has(usuarioId);
+                btnParejaHTML = yaEnviada
+                    ? `<button style="width:100%; margin-top:8px; padding:8px; background:white; border:1px solid #ccc; border-radius:8px; color:#999; cursor:default;" disabled>⏳ Solicitud de pareja enviada</button>`
+                    : `<button class="js-solicitar-pareja-btn" data-user-id="${item.usuarioId}" style="width:100%; margin-top:8px; padding:8px; background:white; border:1px solid var(--accent); color:var(--accent); border-radius:8px; cursor:pointer; font-weight:600;">💑 Solicitar pareja</button>`;
+            } else if (parejaInfo.tienePareja && window.estadoParejaGlobal?.parejaActivaId == item.usuarioId) {
+                btnParejaHTML = `<button style="width:100%; margin-top:8px; padding:8px; background:white; border:1px solid #4caf50; border-radius:8px; color:#4caf50; cursor:default;" disabled>💑 Son pareja</button>`;
+            }
+
             div.innerHTML = `
                 ${UI.construirCardUsuario(usuario)}
                 <p style="margin: 10px 0 0 0; color: var(--text-muted);">Amigos desde ${item.fechaAmistad}</p>
                 <button class="btn-primary js-user-chat-btn" data-user-id="${item.usuarioId}" style="width: 100%; margin-top: 10px;">Enviar mensaje</button>
+                ${btnParejaHTML}
             `;
 
             const nombreElement = div.querySelector('.js-user-name');
@@ -201,11 +301,28 @@ const UI = {
     // Para mostrar el perfil completo de otro usuario
     mostrarPerfilUsuario(usuario) {
         // Llenar los campos de la vista de perfil
+        const fechaNacimiento = usuario.fecha_nacimiento || usuario.fechaNacimiento;
+        const edad = UI.calcularEdad(fechaNacimiento);
+
         document.getElementById('verNombre').textContent = UI.obtenerNombreVisible(usuario);
-        document.getElementById('verEdad').textContent = (usuario.edad || '-') + (usuario.genero ? ` (${usuario.genero})` : '');
+        document.getElementById('verApellidoPaterno').textContent = usuario.apellido_paterno || usuario.apellidoPaterno || '-';
+        document.getElementById('verApellidoMaterno').textContent = usuario.apellido_materno || usuario.apellidoMaterno || '-';
+        document.getElementById('verApodo').textContent = usuario.apodo || '-';
+        document.getElementById('verPais').textContent = usuario.pais || usuario.país || '-';
+        document.getElementById('verFechaNacimiento').textContent = fechaNacimiento ? new Date(fechaNacimiento).toLocaleDateString('es-ES') : '-';
+        document.getElementById('verEdad').textContent = edad !== null ? `${edad} años` : '-';
         document.getElementById('verGenero').textContent = usuario.genero || '-';
-        document.getElementById('verWhatsapp').textContent = usuario.whatsapp || '-';
-        document.getElementById('verInstagram').textContent = usuario.instagram || '-';
+        const esAmigo = window.relacionesUsuariosGlobal?.amigos?.has(String(usuario.id));
+        const privWa = usuario.mostrar_whatsapp || 'nadie';
+        const privIg = usuario.mostrar_instagram || 'nadie';
+        const privEm = usuario.mostrar_email || 'nadie';
+        const puedeVerWa = privWa === 'publico' || (privWa === 'conocidos' && esAmigo);
+        const puedeVerIg = privIg === 'publico' || (privIg === 'conocidos' && esAmigo);
+        const puedeVerEm = privEm === 'publico' || (privEm === 'conocidos' && esAmigo);
+        document.getElementById('verWhatsapp').textContent = puedeVerWa ? (usuario.whatsapp || '-') : '🔒 Privado';
+        document.getElementById('verInstagram').textContent = puedeVerIg ? (usuario.instagram || '-') : '🔒 Privado';
+        const verEmail = document.getElementById('verEmail');
+        if (verEmail) verEmail.textContent = puedeVerEm ? (usuario.email || '-') : '🔒 Privado';
         document.getElementById('verBio').textContent = usuario.bio || '-';
         document.getElementById('verIntereses').textContent = usuario.intereses || '-';
         
@@ -243,8 +360,28 @@ const UI = {
         };
         document.getElementById('verBusca').textContent = textoBusca[usuario.busca] || usuario.busca || '-';
         
-        // Guardar ID del usuario para usar en el botón de mensaje
+        // Guardar ID del usuario para usar en los botones de acción
         window.usuarioPerfilActualId = usuario.id;
+
+        // Mostrar/ocultar botones según relación con este usuario
+        const esAmigoPerfil = window.relacionesUsuariosGlobal?.amigos?.has(String(usuario.id));
+        const solicitudAmistadEnviada = window.relacionesUsuariosGlobal?.solicitudesEnviadas?.has(String(usuario.id));
+        const esParejaActiva = window.estadoParejaGlobal?.parejaActivaId == usuario.id;
+        const solicitudEnviada = window.estadoParejaCache?.idsConSolicitudEnviada?.has(String(usuario.id));
+        const generoOpuesto = window.estadoParejaCache?.miGenero === 'masculino' ? 'femenino' : (window.estadoParejaCache?.miGenero === 'femenino' ? 'masculino' : null);
+        const puedesolicitarPareja = esAmigoPerfil && generoOpuesto && usuario.genero === generoOpuesto && !window.estadoParejaCache?.tienePareja && !esParejaActiva && !solicitudEnviada;
+
+        const btnDejarAmigo = document.getElementById('btnDejarAmigo');
+        const btnTerminarPareja = document.getElementById('btnTerminarParejaPerfil');
+        const btnSolicitarPareja = document.getElementById('btnSolicitarParejaPerfil');
+        const btnSolicitudEnviada = document.getElementById('btnSolicitudParejaEnviada');
+        const btnSolicitudAmistad = document.getElementById('btnSolicitudAmistad');
+
+        if (btnSolicitudAmistad) btnSolicitudAmistad.style.display = (solicitudAmistadEnviada && !esAmigoPerfil) ? 'block' : 'none';
+        if (btnDejarAmigo) btnDejarAmigo.style.display = esAmigoPerfil ? 'block' : 'none';
+        if (btnTerminarPareja) btnTerminarPareja.style.display = esParejaActiva ? 'block' : 'none';
+        if (btnSolicitarPareja) btnSolicitarPareja.style.display = puedesolicitarPareja ? 'block' : 'none';
+        if (btnSolicitudEnviada) btnSolicitudEnviada.style.display = (solicitudEnviada && !esParejaActiva) ? 'block' : 'none';
         
         // Cambiar a la sección de perfil de usuario
         const menuItems = document.querySelectorAll('.menu-item');
@@ -278,4 +415,8 @@ const UI = {
         // Abrir el chat con el contacto
         await Chat.abrirChat(contactoId);
     }
+};
+
+window.calcularEdadDesdeFechaNacimiento = function(fechaNacimiento) {
+    return UI.calcularEdad(fechaNacimiento);
 };
