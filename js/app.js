@@ -418,6 +418,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         return (valor || '').toString().trim().toLowerCase();
     }
 
+    function esGeneroOpuesto(miGenero, generoOtro) {
+        const mio = normalizarTexto(miGenero);
+        const otro = normalizarTexto(generoOtro);
+        if (!mio || !otro) return true;
+        if (mio === 'masculino') return otro === 'femenino';
+        if (mio === 'femenino') return otro === 'masculino';
+        return true;
+    }
+
     function usuarioCoincideConPais(usuario, paisValor, paisLabel) {
         if (!paisValor) return true;
         const paisUsuario = obtenerPaisUsuario(usuario);
@@ -444,7 +453,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderizarTarjetaCita(cita, modo) {
         const estadoColor = estadoColores[cita.estado] || '#888';
-        const otra = modo === 'recibida' ? cita.remitente_email : cita.destinatario_email;
+        const esRecibida = modo === 'recibida';
+        const otroId = esRecibida ? cita.remitente_id : cita.destinatario_id;
+        const otroPorId = usuariosCargados.find((u) => String(u.id) === String(otroId));
+        const otroPorEmail = usuariosCargados.find((u) => {
+            const emailCita = (esRecibida ? cita.remitente_email : cita.destinatario_email) || '';
+            return ((u.email || '').trim().toLowerCase() === emailCita.trim().toLowerCase());
+        });
+        const otra = otroPorId?.nombre || otroPorId?.nombre_perfil || otroPorEmail?.nombre || otroPorEmail?.nombre_perfil || (esRecibida ? cita.remitente_email : cita.destinatario_email) || 'Usuario';
+        const puedeResponder = modo === 'recibida' && cita.estado === 'pendiente';
 
         let participantesHTML = '';
         if (cita.tipo === 'gokon' && Array.isArray(cita.participantes) && cita.participantes.length) {
@@ -462,8 +479,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span style="background:${estadoColor}; color:white; padding:4px 10px; border-radius:4px; font-size:0.8rem; text-transform:capitalize; white-space:nowrap;">${cita.estado || 'pendiente'}</span>
                 </div>
                 <p style="margin-bottom:6px; color:var(--text-muted);">${formatearFechaCita(cita.fecha, cita.hora)} ${cita.hora ? '· ' + formatearHoraCita(cita.hora) : ''}</p>
-                ${cita.tipo !== 'gokon' ? `<p style="margin-bottom:${modo === 'recibida' && cita.estado === 'pendiente' ? '14px' : '0'};"><strong>${modo === 'recibida' ? 'De:' : 'Para:'}</strong> ${otra}</p>` : participantesHTML}
-                ${modo === 'recibida' && cita.estado === 'pendiente' && cita.tipo !== 'gokon' ? `
+                <p style="margin-bottom:6px;"><strong>${modo === 'recibida' ? 'De:' : 'Para:'}</strong> ${otra}</p>
+                ${cita.tipo === 'gokon' ? participantesHTML : ''}
+                ${puedeResponder ? `
                 <div style="display:flex; gap:10px;">
                     <button class="btn-primary js-cita-accept-btn" data-id="${cita.id}" style="padding:8px 16px;">✓ Aceptar</button>
                     <button class="js-cita-reject-btn" data-id="${cita.id}" style="padding:8px 16px; border:1px solid #dee2e6; background:white; border-radius:8px; cursor:pointer;">✗ Rechazar</button>
@@ -482,8 +500,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const recibidas = (data || []).filter(c => c.destinatario_email === session.user.email);
-        const enviadas = (data || []).filter(c => c.remitente_email === session.user.email);
+        const emailSesion = (session.user.email || '').trim().toLowerCase();
+        const miId = usuarioActualId || perfilPropioCache?.id || null;
+
+        const recibidas = (data || []).filter((c) => {
+            const matchId = miId !== null && miId !== undefined && String(c.destinatario_id) === String(miId);
+            const matchEmail = ((c.destinatario_email || '').trim().toLowerCase() === emailSesion);
+            return matchId || matchEmail;
+        });
+        const enviadas = (data || []).filter((c) => {
+            const matchId = miId !== null && miId !== undefined && String(c.remitente_id) === String(miId);
+            const matchEmail = ((c.remitente_email || '').trim().toLowerCase() === emailSesion);
+            return matchId || matchEmail;
+        });
 
         if (citaRecibidasList) {
             citaRecibidasList.innerHTML = recibidas.length === 0
@@ -500,8 +529,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderizarOpcionesUsuarios() {
         if (!citaPersonaSelect) return;
+        const miPerfil = usuariosCargados.find((u) => (u.email || '').trim().toLowerCase() === (emailActual || '').trim().toLowerCase()) || perfilPropioCache;
+        const miGenero = miPerfil?.genero || '';
         const candidatos = usuariosCargados
-            .filter((u) => u.email !== emailActual);
+            .filter((u) => u.email !== emailActual)
+            .filter((u) => esGeneroOpuesto(miGenero, u.genero));
 
         if (citaFiltroPaisSelect) {
             const paisSeleccionado = citaFiltroPaisSelect.value || '';
@@ -518,10 +550,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             .filter((u) => usuarioCoincideConPais(u, paisActivo, paisActivoLabel))
             .map((u) => {
                 const nombre = u.nombre || u.nombre_perfil || u.email?.split('@')[0] || 'Usuario';
-                return `<option value="${u.email}">${nombre}</option>`;
+                return `<option value="${u.id}">${nombre}</option>`;
             })
             .join('');
         citaPersonaSelect.innerHTML = `<option value="">Selecciona un usuario</option>${opciones}`;
+    }
+
+    async function insertarCitasCompat(filas) {
+        const { error } = await supabaseClient.from('citas').insert(filas);
+        if (!error) return { error: null };
+
+        const mensaje = (error?.message || '').toLowerCase();
+        const falloIdColumns = mensaje.includes('remitente_id') || mensaje.includes('destinatario_id') || mensaje.includes('column');
+        if (!falloIdColumns) return { error };
+
+        const filasSinIds = filas.map(({ remitente_id, destinatario_id, ...resto }) => resto);
+        const reintento = await supabaseClient.from('citas').insert(filasSinIds);
+        return { error: reintento.error || null };
     }
 
     if (citaFiltroPaisSelect) {
@@ -603,10 +648,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const chicasIds = Array.from(document.querySelectorAll('#listaChicasGokon .gokon-check:checked')).map(c => parseInt(c.value));
 
                 // Incluir al creador según su género si no está ya seleccionado
-                const miPerfil = usuariosCargados.find(u => u.email === session.user.email);
-                if (miPerfil) {
-                    if (miPerfil.genero === 'masculino' && !chicosIds.includes(miPerfil.id)) chicosIds.unshift(miPerfil.id);
-                    if (miPerfil.genero === 'femenino' && !chicasIds.includes(miPerfil.id)) chicasIds.unshift(miPerfil.id);
+                const miPerfilSesion = usuariosCargados.find((u) => (u.email || '').trim().toLowerCase() === (session.user.email || '').trim().toLowerCase());
+                if (miPerfilSesion) {
+                    if (miPerfilSesion.genero === 'masculino' && !chicosIds.includes(miPerfilSesion.id)) chicosIds.unshift(miPerfilSesion.id);
+                    if (miPerfilSesion.genero === 'femenino' && !chicasIds.includes(miPerfilSesion.id)) chicasIds.unshift(miPerfilSesion.id);
                 }
 
                 if (chicosIds.length < 2 || chicasIds.length < 2) {
@@ -614,32 +659,74 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                const participantes = [...chicosIds, ...chicasIds];
-                const { error } = await supabaseClient.from('citas').insert([{
-                    remitente_email: session.user.email,
-                    destinatario_email: session.user.email, // organizador
-                    tipo: 'gokon',
-                    fecha,
-                    hora,
-                    lugar,
-                    estado: 'pendiente',
-                    participantes
-                }]);
+                const participantes = [...new Set([...chicosIds, ...chicasIds])];
+                const miId = miPerfilSesion?.id || usuarioActualId || perfilPropioCache?.id || null;
+
+                const invitadoIds = participantes.filter((id) => String(id) !== String(miId));
+                if (invitadoIds.length === 0) {
+                    if (citaFeedback) citaFeedback.textContent = 'Selecciona al menos un participante adicional para el gokon.';
+                    return;
+                }
+
+                const usuariosPorId = new Map(usuariosCargados.map((u) => [String(u.id), u]));
+                const filas = invitadoIds
+                    .map((id) => usuariosPorId.get(String(id)))
+                    .filter((u) => !!u?.email)
+                    .map((u) => ({
+                        remitente_id: miId,
+                        remitente_email: session.user.email,
+                        destinatario_id: u.id,
+                        destinatario_email: u.email,
+                        tipo: 'gokon',
+                        fecha,
+                        hora,
+                        lugar,
+                        estado: 'pendiente',
+                        participantes
+                    }));
+
+                if (filas.length !== invitadoIds.length) {
+                    if (citaFeedback) citaFeedback.textContent = 'No se pudo resolver el correo de todos los participantes seleccionados.';
+                    return;
+                }
+
+                const { error } = await insertarCitasCompat(filas);
 
                 if (error) {
                     if (citaFeedback) citaFeedback.textContent = 'Error: ' + error.message;
                     return;
                 }
+
+                if (citaFeedback) {
+                    citaFeedback.textContent = `Invitación grupal enviada a ${filas.length} participante${filas.length === 1 ? '' : 's'}.`;
+                }
             } else {
-                const destinatario = citaPersonaSelect?.value?.trim() || '';
-                if (!destinatario) {
+                const destinatarioId = citaPersonaSelect?.value?.trim() || '';
+                if (!destinatarioId) {
                     if (citaFeedback) citaFeedback.textContent = 'Selecciona con quién quieres agendar la cita.';
                     return;
                 }
 
-                const { error } = await supabaseClient.from('citas').insert([{
+                const destinatarioPerfil = usuariosCargados.find((u) => String(u.id) === String(destinatarioId));
+                if (!destinatarioPerfil?.email) {
+                    if (citaFeedback) citaFeedback.textContent = 'No se pudo resolver el usuario seleccionado.';
+                    return;
+                }
+
+                const miPerfilSesion = usuariosCargados.find((u) => (u.email || '').trim().toLowerCase() === (session.user.email || '').trim().toLowerCase()) || perfilPropioCache;
+                const miGenero = miPerfilSesion?.genero || '';
+                if (!esGeneroOpuesto(miGenero, destinatarioPerfil?.genero || '')) {
+                    if (citaFeedback) citaFeedback.textContent = 'La cita normal solo puede ser con una persona del sexo opuesto.';
+                    return;
+                }
+
+                const miId = usuarioActualId || perfilPropioCache?.id || null;
+
+                const { error } = await insertarCitasCompat([{
+                    remitente_id: miId,
                     remitente_email: session.user.email,
-                    destinatario_email: destinatario,
+                    destinatario_id: destinatarioPerfil.id,
+                    destinatario_email: destinatarioPerfil.email,
                     tipo,
                     fecha,
                     hora,
@@ -659,7 +746,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('citaGokonGroup').style.display = 'none';
             document.getElementById('contadorChicos').textContent = '0';
             document.getElementById('contadorChicas').textContent = '0';
-            if (citaFeedback) citaFeedback.textContent = '¡Invitación enviada!';
+            if (tipo !== 'gokon' && citaFeedback) citaFeedback.textContent = '¡Invitación enviada!';
             showCitasTab('enviadas');
             await cargarCitas();
         });
